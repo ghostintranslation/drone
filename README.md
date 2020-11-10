@@ -36,15 +36,15 @@ What things you need to make it work:
 6 vertical linear 10k potentiometers
 3 14 pins male header
 5 14 pins female header
+1 5 pins female header
 4 CD4051 multiplexers
-4 DIP16 IC sockets (optionak)
-2 3.5mm jack connectors
-1 resistor ~ 22ohm
+4 DIP16 IC sockets (optional)
+1 resistor ~ 22ohm *
 4 LED
-1 4 positions dipswitch (optional)
 ```
+* Regarding the resistor, this resistor is for the leds, you might notice that a 1ohm resistor will do the trick too, this is because the multiplexers have acutally impedance depending on the part number (CD4051 but you could try others with same pins) and the frequency of switching them. 
 
-I personally get these parts from multiple stores: digikey.com, thonk.co.uk, modularaddict.com
+I personally get these parts from multiple stores: digikey.com, thonk.co.uk, modularaddict.com, amazon, aliexpress...
 
 In order to run any sketch on the Teensy you have to install the Teensyduino add-on to Arduino.
 Follow the instructions from the official page:
@@ -80,6 +80,8 @@ Fm
 ## MIDI
 
 The MIDI input and output jacks are directly connected to the Teensy serial input and output. That means there is not protection against voltage or current. It is primarily ment to connect 2 of these modules, or 2 Teensy together. If you want to connect something else to it make sure to provide a maximum of 3.3v and 250 mA.
+
+Note that this module doesn't do anything MIDI but you could hack it.
 
 ## License
 
