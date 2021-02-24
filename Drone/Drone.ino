@@ -16,7 +16,6 @@ https://github.com/ghostintranslation
 
 #include <Audio.h>
 
-#include "Motherboard6.h"
 #include "Drone.h"
 
 // Instanciation of Drone
@@ -36,7 +35,7 @@ void setup() {
   AudioMemory(40);
 
   audioBoard.enable();
-  audioBoard.volume(0.2);
+  audioBoard.volume(0.4);
   
   while (!Serial && millis() < 2500); // wait for serial monitor
 
