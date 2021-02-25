@@ -58,6 +58,7 @@ inline Drone::Drone(){
   
   for (int i = 0; i < this->voiceCount; i++) {
     this->voices[i] = new Voice();
+    this->voices[i]->setUpdateMillis(this->updateMillis);
     this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutput(), 0, *this->output, i);
   }
   
@@ -112,6 +113,14 @@ inline AudioMixer4 * Drone::getOutput(){
  */
 inline void Drone::update(){
   this->device->update();
+
+  if(this->clockUpdate > updateMillis){
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->update();
+    }
+    
+    this->clockUpdate = 0;
+  }
 }
 
 /**
@@ -133,6 +142,12 @@ inline void Drone::onTuneChange(byte inputIndex, unsigned int value, int diffToP
  * On Mix Change
  */
 inline void Drone::onMixChange(byte inputIndex, unsigned int value, int diffToPrevious){
+  if(diffToPrevious == -1 || 
+     diffToPrevious == 0 ||
+     diffToPrevious ==1){
+      return;
+  }
+     
   float mix = (float)map(
     (float)value, 
     getInstance()->device->getAnalogMinValue(), 
@@ -146,10 +161,14 @@ inline void Drone::onMixChange(byte inputIndex, unsigned int value, int diffToPr
   float voice3Gain = constrain(100*cos(mix+0.5*PI) + pow(mix,2), 0, 100);
   float voice4Gain = constrain(100*cos(mix+PI) + pow(mix,2), 0, 100);
 
-  getInstance()->output->gain(0, voice1Gain/400);
-  getInstance()->output->gain(1, voice2Gain/400);
-  getInstance()->output->gain(2, voice3Gain/400);
-  getInstance()->output->gain(3, voice4Gain/400);
+  getInstance()->voices[0]->setGain(voice1Gain/400);
+  getInstance()->voices[1]->setGain(voice2Gain/400);
+  getInstance()->voices[2]->setGain(voice3Gain/400);
+  getInstance()->voices[3]->setGain(voice4Gain/400);
+//  getInstance()->output->gain(0, voice1Gain/400);
+//  getInstance()->output->gain(1, voice2Gain/400);
+//  getInstance()->output->gain(2, voice3Gain/400);
+//  getInstance()->output->gain(3, voice4Gain/400);
       
   getInstance()->device->setLED(0, 1, 2.5 * voice1Gain);
   getInstance()->device->setLED(1, 1, 2.5 * voice2Gain);
@@ -164,12 +183,12 @@ inline void Drone::onMidiMixChange(byte value){
     unsigned int mapValue = map(
     value, 
     0,
-    255,
+    127,
     getInstance()->device->getAnalogMinValue(), 
     getInstance()->device->getAnalogMaxValue()
   );
 
-  getInstance()->onMixChange(0, mapValue, 0);
+  getInstance()->onMixChange(0, mapValue, 10);
 }
 
 /**

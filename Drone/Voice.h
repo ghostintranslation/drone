@@ -31,15 +31,23 @@ class Voice{
     AudioMixer4 *output;
 
     unsigned int freq = 0;
+    unsigned int frequencyTarget = 0;
+    byte intervalGlide = 200;
+    float gain = 0;
+    float gainTarget = 0;
+    unsigned int intervalGain = 200;
+    byte updateMillis = 0;
 
   public:
     Voice();
     void update();
     AudioMixer4 * getOutput();
     // Setters
-    void setFrequency(int freq);
+    void setFrequency(int targetFreq);
+    void setGain(float gain);
     void setModulatorFrequency(int freq);
     void setModulatorAmplitude(float amp);
+    void setUpdateMillis(byte updateMillis);
 };
 
 /**
@@ -52,7 +60,7 @@ inline Voice::Voice(){
   this->sineFM->amplitude(1);
   this->sineModulator = new AudioSynthWaveformSine();
   this->output = new AudioMixer4();
-  this->output->gain(0, 1);
+  this->output->gain(0, 0);
 
   this->patchCords[0] = new AudioConnection(*this->sineModulator, 0, *this->sineFM, 0);
   this->patchCords[1] = new AudioConnection(*this->sineFM, 0, *this->output, 0);
@@ -78,8 +86,33 @@ inline AudioMixer4 * Voice::getOutput(){
 /**
  * Set the frequency
  */
-inline void Voice::setFrequency(int freq){
-  this->freq = freq;
-  this->sineFM->frequency(freq);
+inline void Voice::setFrequency(int frequencyTarget){
+  this->frequencyTarget = frequencyTarget;
+}
+
+inline void Voice::update(){
+  if(this->frequencyTarget > this->freq){
+    this->freq += (this->frequencyTarget - this->freq) / ((float)this->intervalGlide / (float)updateMillis);
+  }else{
+    this->freq -= (this->freq - this->frequencyTarget) / ((float)this->intervalGlide / (float)updateMillis);
+  }
+
+  if(this->gainTarget > this->gain){
+    this->gain += (this->gainTarget - this->gain) / ((float)this->intervalGain / (float)updateMillis);
+  }else{
+    this->gain -= (this->gain - this->gainTarget) / ((float)this->intervalGain / (float)updateMillis);
+  }
+  
+  
+  this->sineFM->frequency(this->freq);
+  this->output->gain(0, this->gain);
+}
+
+inline void Voice::setUpdateMillis(byte updateMillis){
+  this->updateMillis = updateMillis;
+}
+
+inline void Voice::setGain(float gainTarget){
+  this->gainTarget = gainTarget;
 }
 #endif
