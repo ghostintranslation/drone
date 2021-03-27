@@ -225,7 +225,7 @@ class Motherboard6{
     GlobalMidiControlChangeCallback globalMidiControlChangeCallback;
     using MidiSysExCallback = void (*)(const uint8_t*, uint16_t, bool);
     MidiSysExCallback midiSysExCallback;
-    using MidiControlChangeCallbackFunction = void (*)(byte);
+    using MidiControlChangeCallbackFunction = void (*)(byte, byte, byte);
     struct MidiControlChangeCallback{
       String controlName = "";
       MidiControlChangeCallbackFunction callback = nullptr;
@@ -267,8 +267,8 @@ class Motherboard6{
     void initSequence();
     int getInput(byte index);
     bool getEncoderSwitch(byte index);
-    int getAnalogMaxValue();
-    int getAnalogMinValue();
+    unsigned int getAnalogMaxValue();
+    unsigned int getAnalogMinValue();
     byte getMidiChannel();
 
     // Callbacks
@@ -1034,14 +1034,14 @@ inline bool Motherboard6::getEncoderSwitch(byte index){
 /**
  * Get max analog value according to resolution
  */
-inline int Motherboard6::getAnalogMinValue(){
+inline unsigned int Motherboard6::getAnalogMinValue(){
   return 0;
 }
 
 /**
  * Get max analog value according to resolution
  */
-inline int Motherboard6::getAnalogMaxValue(){
+inline unsigned int Motherboard6::getAnalogMaxValue(){
   return (1 << this->analogResolution) - 1;
 }
 
@@ -1110,14 +1110,8 @@ inline void Motherboard6::setHandleRotaryChange(byte inputIndex, RotaryChangeCal
 }
 
 inline void Motherboard6::writeLED(byte index){
-  if(this->ledsBrightness[index] == 255){
-    digitalWriteFast(22, LOW);
-  }else if(this->ledsBrightness[index] == 0){
-    digitalWriteFast(22, HIGH);
-  }else{
-    byte reversedBrightness = map(this->ledsBrightness[index], 0, 255, 255, 0);
-    analogWrite(22, reversedBrightness); 
-  }
+  byte reversedBrightness = map(this->ledsBrightness[index], 0, 255, 255, 0);  
+  analogWrite(22, reversedBrightness); 
 }
 
 /**
@@ -1202,7 +1196,7 @@ inline void Motherboard6::handleMidiControlChange(byte channel, byte control, by
       if(mc.midiChannel == 0 && mc.midiCC == control){
         MidiControlChangeCallback *c = Motherboard6::getInstance()->getMidiControlChangeCallback(mc.controlName);
         if(c != nullptr && c->callback != nullptr){
-          c->callback(value);
+          c->callback(0, control, value);
         }
       }
     }
@@ -1213,7 +1207,7 @@ inline void Motherboard6::handleMidiControlChange(byte channel, byte control, by
     if(mc.midiChannel == channel && mc.midiCC == control){
       MidiControlChangeCallback *c = Motherboard6::getInstance()->getMidiControlChangeCallback(mc.controlName);
       if(c != nullptr && c->callback != nullptr){
-        c->callback(value);
+        c->callback(channel, control, value);
       }
     }
   }
