@@ -4,6 +4,7 @@
 \_|| |\_/__) |    _|_| |    | | \| || |__)|__| | | _|_\_/| |
 
 DRONE
+v1.1.0
 
 If you enjoy my work and music please consider donating.
 
