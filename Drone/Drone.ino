@@ -23,8 +23,8 @@ https://github.com/ghostintranslation
 Drone * drone = Drone::getInstance();
 
 AudioOutputI2S  i2s2;
-AudioConnection patchCord1(*drone->getOutput(), 0, i2s2, 0);
-AudioConnection patchCord2(*drone->getOutput(), 0, i2s2, 1);
+AudioConnection patchCord1(*drone->getOutputLeft(), 0, i2s2, 0);
+AudioConnection patchCord2(*drone->getOutputRight(), 0, i2s2, 1);
 AudioControlSGTL5000 audioBoard;
 
 void setup() {

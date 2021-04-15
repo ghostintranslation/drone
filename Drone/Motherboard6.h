@@ -187,7 +187,7 @@ class Motherboard6{
     elapsedMicros clockMain;
     const unsigned int intervalClockMain = 5000;
     // Leds clocks
-    const unsigned int intervalDisplay = 10;
+    const unsigned int intervalDisplay = 1000;
     elapsedMicros clockDisplay;
     const unsigned int intervalDisplayFlash = 400;
     elapsedMillis clockDisplayFlash;
