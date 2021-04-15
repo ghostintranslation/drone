@@ -44,7 +44,7 @@ What things you need to make it work:
 1 resistor ~ 22ohm
 4 LED
 1 4 positions dipswitch (optional)
-``
+```
 
 Here is a list of useful links to get these parts: https://github.com/ghostintranslation/parts
 
@@ -103,11 +103,31 @@ Fm
         3. 0 to 1000Hz, higher amplitude
 ```
 
+All of the inputs and more are available via MIDI CC.
+
 ## MIDI
 
-The MIDI input and output jacks are directly connected to the Teensy serial input and output. That means there is not protection against voltage or current. It is primarily ment to connect 2 of these modules, or 2 Teensy together. If you want to connect something else to it make sure to provide a maximum of 3.3v and 250 mA.
+DRONE supports MIDI in via USB and TS jack. It doesn't send out any MIDI.
 
-Note that this module doesn't do anything MIDI but you could hack it.
+The default settings are:
+```
+CC 0 = Tune voice 1
+CC 1 = Tune voice 2
+CC 2 = Tune voice 3
+CC 3 = Tune voice 4
+CC 4 = Mix
+CC 5 = FM
+CC 6 = Pan voice 1
+CC 7 = Pan voice 2
+CC 8 = Pan voice 3
+CC 9 = Pan voice 4
+```
+
+These settings can be changed in the code or via the web editor: http://ghostintranslation.com/editor
+
+**Important:**
+
+The MIDI input and output jacks are directly connected to the Teensy serial input and output. That means there is not protection against voltage or current. It is primarily ment to connect 2 of these modules, or 2 Teensy together. If you want to connect something else to it make sure to provide a maximum of 3.3v and 250 mA.
 
 ## License
 
