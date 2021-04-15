@@ -33,28 +33,54 @@ What things you need to make it work:
 1 MOTHERBOARD6A pcb
 1 MOTHERBOARD6B pcb
 1 DRONE front panel pcb
-6 vertical linear 10k potentiometers
-3 14 pins male header
+6 vertical linear 10k potentiometers with their nuts
+1 5 pins male header
+5 14 pins male header
 5 14 pins female header
-1 5 pins female header
+2 14 pins long female header
 4 CD4051 multiplexers
 4 DIP16 IC sockets (optional)
-1 resistor ~ 22ohm *
+2 3.5mm jack connectors
+1 resistor ~ 22ohm
 4 LED
+1 4 positions dipswitch (optional)
 ```
-* Regarding the resistor, this resistor is for the leds, you might notice that a 1ohm resistor will do the trick too, this is because the multiplexers have acutally impedance depending on the part number (CD4051 but you could try others with same pins) and the frequency of switching them. 
 
-I personally get these parts from multiple stores: digikey.com, thonk.co.uk, modularaddict.com, amazon, aliexpress...
+Here is a list of useful links to get these parts: https://github.com/ghostintranslation/parts
 
-In order to run any sketch on the Teensy you have to install the Teensyduino add-on to Arduino.
+Note: 
+- The resistor doesn't need to be high because the multiplexers already are resistive, so try a few values. You can place the resistor and LEDs without soldering to test, there should be enough contact.
+- The dipswitch is optional, without it the module will listen to channel 1.
+
+### Assembly
+
+1. Solder male 14 pins headers on the audio board
+2. Solder 14 pins long female header and 5 pins male header on Teensy
+3. Solder 14 pins male headers on MOTHERBOARD6A
+4. Place the potentiometers and LEDs on MOTHERBOARD6A, and attach the front panel
+5. Solder the potentiometers and the LEDs
+6. Place the female headers for the Teensy on MOTHERBOARD6B, insert the Teensy on them, then solder the headers
+7. Detach the Teensy for now
+8. Solder the jack connectors, the dipswitch and the resistor on MOTHERBOARD6B
+9. Place 14 pins female headers on MOTHERBOARD6B, connect MOTHERBOARD6A on them, then solder the headers
+10. Detach the boards for now
+11. Solder IC sockets on IC1, IC2, IC5 and IC6 positions on MOTHERBOARD6B
+12. Add the multiplexers on the sockets, connect the 2 boards and connect the Teensy and audio board
+
+Note: Be careful how you place the potentiometers:
+
+<img src="https://github.com/ghostintranslation/motherboard6/blob/master/input-traces.png" width="200px"/>
+
+### Firmware
+
+In order to run any sketch on the Teensy you have to install Arduino and the Teensyduino add-on.
 Follow the instructions from the official page:
 https://www.pjrc.com/teensy/teensyduino.html
 
-Then open the sketch located in the Drone folder of this repo.
-
-In the Tools -> USB Type menu, choose "Serial + midi".
-
-Then you are ready to compile and upload the sketch.
+1. Then open `Drone.ino` located in the `Drone` folder of this repo.
+2. In the Tools -> USB Type menu, choose `Serial + midi`.
+3. Plug the Teensy to your computer with a micro USB cable. (It's ok if the Teensy is on the module)
+4. Then just click the arrow button to upload the code
 
 ## How to use
 
@@ -77,18 +103,38 @@ Fm
         3. 0 to 1000Hz, higher amplitude
 ```
 
+All of the inputs and more are available via MIDI CC.
+
 ## MIDI
 
-The MIDI input and output jacks are directly connected to the Teensy serial input and output. That means there is not protection against voltage or current. It is primarily ment to connect 2 of these modules, or 2 Teensy together. If you want to connect something else to it make sure to provide a maximum of 3.3v and 250 mA.
+DRONE supports MIDI in via USB and TS jack. It doesn't send out any MIDI.
 
-Note that this module doesn't do anything MIDI but you could hack it.
+The default settings are:
+```
+CC 0 = Tune voice 1
+CC 1 = Tune voice 2
+CC 2 = Tune voice 3
+CC 3 = Tune voice 4
+CC 4 = Mix
+CC 5 = FM
+CC 6 = Pan voice 1
+CC 7 = Pan voice 2
+CC 8 = Pan voice 3
+CC 9 = Pan voice 4
+```
+
+These settings can be changed in the code or via the web editor: http://ghostintranslation.com/editor
+
+**Important:**
+
+The MIDI input and output jacks are directly connected to the Teensy serial input and output. That means there is not protection against voltage or current. It is primarily ment to connect 2 of these modules, or 2 Teensy together. If you want to connect something else to it make sure to provide a maximum of 3.3v and 250 mA.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
 # About me
-You can find me on Bandcamp and Instagram:
+You can find me on Bandcamp, Instagram, Youtube and my own site:
 
 https://ghostintranslation.bandcamp.com/
 

@@ -26,17 +26,25 @@ class Drone{
     elapsedMillis clockUpdate;
 
     AudioConnection* patchCords[4]; 
-    AudioMixer4 *output;
+    AudioMixer4 *outputLeft;
+    AudioMixer4 *outputRight;
     
   public:
     static Drone *getInstance();
     void init();
     void update();
+    // Inputs callbacks
     static void onTuneChange(byte inputIndex, unsigned int value, int diffToPrevious);
     static void onMixChange(byte inputIndex, unsigned int value, int diffToPrevious);
     static void onFmChange(byte inputIndex, unsigned int value, int diffToPrevious);
-    AudioMixer4 * getOutput();
-
+    // Midi callbacks
+    static void onMidiTuneChange(byte channel, byte control, byte value);
+    static void onMidiMixChange(byte channel, byte control, byte value);
+    static void onMidiFmChange(byte channel, byte control, byte value);
+    static void onMidiPanChange(byte channel, byte control, byte value);
+    // Audio output
+    AudioMixer4 * getOutputLeft();
+    AudioMixer4 * getOutputRight();
 };
 
 // Singleton pre init
@@ -49,15 +57,23 @@ inline Drone::Drone(){
 
   this->device = Motherboard6::getInstance();
   
-  this->output = new AudioMixer4();
-  this->output->gain(0, 1 );
-  this->output->gain(1, 1 );
-  this->output->gain(2, 1 );
-  this->output->gain(3, 1 );
+  this->outputLeft = new AudioMixer4();
+  this->outputLeft->gain(0, 1 );
+  this->outputLeft->gain(1, 1 );
+  this->outputLeft->gain(2, 1 );
+  this->outputLeft->gain(3, 1 );
+  
+  this->outputRight = new AudioMixer4();
+  this->outputRight->gain(0, 1 );
+  this->outputRight->gain(1, 1 );
+  this->outputRight->gain(2, 1 );
+  this->outputRight->gain(3, 1 );
   
   for (int i = 0; i < this->voiceCount; i++) {
     this->voices[i] = new Voice();
-    this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutput(), 0, *this->output, i);
+    this->voices[i]->setUpdateMillis(this->updateMillis);
+    this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutputLeft(), 0, *this->outputLeft, i);
+    this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutputRight(), 0, *this->outputRight, i);
   }
   
 }
@@ -75,9 +91,14 @@ inline Drone *Drone::getInstance()    {
  * Init
  */
 inline void Drone::init(){
-  // 0 = empty, 1 = button, 2 = potentiometer, 3 = encoder
-  byte controls[9] = {2,2, 2,2, 2,2};
-  this->device->init(controls);
+  device->init(
+    "Drone",
+    {
+      Potentiometer, Potentiometer,
+      Potentiometer, Potentiometer,
+      Potentiometer, Potentiometer
+    }
+  );
 
   // Device callbacks
   this->device->setHandlePotentiometerChange(0, onTuneChange);
@@ -86,28 +107,58 @@ inline void Drone::init(){
   this->device->setHandlePotentiometerChange(3, onTuneChange);
   this->device->setHandlePotentiometerChange(4, onMixChange);
   this->device->setHandlePotentiometerChange(5, onFmChange);
+
+  // MIDI callbacks
+  device->setHandleMidiControlChange(0, 0, "Tune 1", onMidiTuneChange);
+  device->setHandleMidiControlChange(0, 1, "Tune 2", onMidiTuneChange);
+  device->setHandleMidiControlChange(0, 2, "Tune 3", onMidiTuneChange);
+  device->setHandleMidiControlChange(0, 3, "Tune 4", onMidiTuneChange);
+  device->setHandleMidiControlChange(0, 4, "Mix",    onMidiMixChange);
+  device->setHandleMidiControlChange(0, 5, "FM",     onMidiFmChange);
+  device->setHandleMidiControlChange(0, 6, "Pan 1",  onMidiPanChange);
+  device->setHandleMidiControlChange(0, 7, "Pan 2",  onMidiPanChange);
+  device->setHandleMidiControlChange(0, 8, "Pan 3",  onMidiPanChange);
+  device->setHandleMidiControlChange(0, 9, "Pan 4",  onMidiPanChange);
 }
 
 
 /**
- * Return the audio output
+ * Return the audio left output
  */
-inline AudioMixer4 * Drone::getOutput(){
-  return this->output;
+inline AudioMixer4 * Drone::getOutputLeft(){
+  return this->outputLeft;
 }
 
+/**
+ * Return the audio right output
+ */
+inline AudioMixer4 * Drone::getOutputRight(){
+  return this->outputRight;
+}
 
 /**
  * Update
  */
 inline void Drone::update(){
   this->device->update();
+
+  if(this->clockUpdate > updateMillis){
+    for (int i = 0; i < voiceCount ; i++) {
+      this->voices[i]->update();
+    }
+    
+    this->clockUpdate = 0;
+  }
 }
 
 /**
  * On Tune Change
  */
 inline void Drone::onTuneChange(byte inputIndex, unsigned int value, int diffToPrevious){
+  if(diffToPrevious >= -1 && diffToPrevious <= 1){
+    return;
+  }
+  
   unsigned int freq = (float)map(
     (float)value, 
     getInstance()->device->getAnalogMinValue(), 
@@ -119,10 +170,30 @@ inline void Drone::onTuneChange(byte inputIndex, unsigned int value, int diffToP
   getInstance()->voices[inputIndex]->setFrequency(freq);
 }
 
+
+/**
+ * On MIDI Tune Change
+ */
+void Drone::onMidiTuneChange(byte channel, byte control, byte value){
+  unsigned int mapValue = map(
+    value, 
+    0,
+    127,
+    getInstance()->device->getAnalogMinValue(), 
+    getInstance()->device->getAnalogMaxValue()
+  );
+  
+  getInstance()->onTuneChange(control, mapValue, 255);
+}
+
 /**
  * On Mix Change
  */
 inline void Drone::onMixChange(byte inputIndex, unsigned int value, int diffToPrevious){
+  if(diffToPrevious >= -1 && diffToPrevious <= 1){
+    return;
+  }
+     
   float mix = (float)map(
     (float)value, 
     getInstance()->device->getAnalogMinValue(), 
@@ -136,10 +207,10 @@ inline void Drone::onMixChange(byte inputIndex, unsigned int value, int diffToPr
   float voice3Gain = constrain(100*cos(mix+0.5*PI) + pow(mix,2), 0, 100);
   float voice4Gain = constrain(100*cos(mix+PI) + pow(mix,2), 0, 100);
 
-  getInstance()->output->gain(0, voice1Gain/400);
-  getInstance()->output->gain(1, voice2Gain/400);
-  getInstance()->output->gain(2, voice3Gain/400);
-  getInstance()->output->gain(3, voice4Gain/400);
+  getInstance()->voices[0]->setGain(voice1Gain/400);
+  getInstance()->voices[1]->setGain(voice2Gain/400);
+  getInstance()->voices[2]->setGain(voice3Gain/400);
+  getInstance()->voices[3]->setGain(voice4Gain/400);
       
   getInstance()->device->setLED(0, 1, 2.5 * voice1Gain);
   getInstance()->device->setLED(1, 1, 2.5 * voice2Gain);
@@ -148,10 +219,28 @@ inline void Drone::onMixChange(byte inputIndex, unsigned int value, int diffToPr
 }
 
 /**
+ * On MIDI Mix Change
+ */
+inline void Drone::onMidiMixChange(byte channel, byte control, byte value){
+    unsigned int mapValue = map(
+    value, 
+    0,
+    127,
+    getInstance()->device->getAnalogMinValue(), 
+    getInstance()->device->getAnalogMaxValue()
+  );
+
+  getInstance()->onMixChange(0, mapValue, 255);
+}
+
+/**
  * On Fm Change
  */
 inline void Drone::onFmChange(byte inputIndex, unsigned int value, int diffToPrevious){
-
+  if(diffToPrevious >= -1 && diffToPrevious <= 1){
+    return;
+  }
+  
   int modulatorFrequency = 0;
   float modulatorAmplitude = 0;
     
@@ -182,4 +271,34 @@ inline void Drone::onFmChange(byte inputIndex, unsigned int value, int diffToPre
   }
 }
 
+/**
+ * On MIDI Fm Change
+ */
+inline void Drone::onMidiFmChange(byte channel, byte control, byte value){
+    unsigned int mapValue = map(
+    value, 
+    0,
+    127,
+    getInstance()->device->getAnalogMinValue(), 
+    getInstance()->device->getAnalogMaxValue()
+  );
+
+  getInstance()->onFmChange(0, mapValue, 255);
+}
+
+/**
+ * On MIDI Pan Change
+ */
+inline void Drone::onMidiPanChange(byte channel, byte control, byte value){
+    byte pan = map(
+    value, 
+    0,
+    127,
+    0, 
+    255
+  );
+
+  byte inputIndex = control - 6;
+  getInstance()->voices[inputIndex]->setPan(pan);
+}
 #endif

@@ -4,6 +4,7 @@
 \_|| |\_/__) |    _|_| |    | | \| || |__)|__| | | _|_\_/| |
 
 DRONE
+v1.1.0
 
 If you enjoy my work and music please consider donating.
 
@@ -16,15 +17,14 @@ https://github.com/ghostintranslation
 
 #include <Audio.h>
 
-#include "Motherboard6.h"
 #include "Drone.h"
 
 // Instanciation of Drone
 Drone * drone = Drone::getInstance();
 
 AudioOutputI2S  i2s2;
-AudioConnection patchCord1(*drone->getOutput(), 0, i2s2, 0);
-AudioConnection patchCord2(*drone->getOutput(), 0, i2s2, 1);
+AudioConnection patchCord1(*drone->getOutputLeft(), 0, i2s2, 0);
+AudioConnection patchCord2(*drone->getOutputRight(), 0, i2s2, 1);
 AudioControlSGTL5000 audioBoard;
 
 void setup() {
@@ -36,7 +36,7 @@ void setup() {
   AudioMemory(40);
 
   audioBoard.enable();
-  audioBoard.volume(0.2);
+  audioBoard.volume(0.4);
   
   while (!Serial && millis() < 2500); // wait for serial monitor
 
