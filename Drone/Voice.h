@@ -33,17 +33,12 @@ class Voice{
     AudioMixer4 *outputLeft;
     AudioMixer4 *outputRight;
 
-    unsigned int freq = 0;
-    unsigned int frequencyTarget = 0;
-    byte pan = 0;
-    byte panTarget = 0;
-    unsigned int modulatorFreq = 0;
-    unsigned int modulatorFrequencyTarget = 0;
-    float modulatorAmp = 0;
-    float modulatorAmplitudeTarget = 0;
+    unsigned int frequency = 0;
+    byte pan = 127;
+    unsigned int modulatorFrequency = 0;
+    float modulatorAmplitude = 0;
     byte intervalGlide = 200;
     float gain = 0;
-    float gainTarget = 0;
     unsigned int intervalGain = 200;
     byte updateMillis = 0;
 
@@ -53,8 +48,8 @@ class Voice{
     AudioMixer4 * getOutputLeft();
     AudioMixer4 * getOutputRight();
     // Setters
-    void setFrequency(int targetFreq);
-    void setPan(byte targetPan);
+    void setFrequency(int freq);
+    void setPan(byte pan);
     void setGain(float gain);
     void setModulatorFrequency(int freq);
     void setModulatorAmplitude(float amp);
@@ -81,13 +76,17 @@ inline Voice::Voice(){
 }
 
 /**
- * Set the modulaor frequency
+ * Set the modulator frequency
  */
-inline void Voice::setModulatorFrequency(int frequencyTarget){
-  this->modulatorFrequencyTarget = frequencyTarget;
+inline void Voice::setModulatorFrequency(int frequency){
+  this->modulatorFrequency = frequency;
 }
-inline void Voice::setModulatorAmplitude(float amplitudeTarget){
-  this->modulatorAmplitudeTarget = amplitudeTarget;
+
+/**
+ * Set the modulator amplitude
+ */
+inline void Voice::setModulatorAmplitude(float amplitude){
+  this->modulatorAmplitude = amplitude;
 }
 
 /**
@@ -107,51 +106,21 @@ inline AudioMixer4 * Voice::getOutputRight(){
 /**
  * Set the frequency
  */
-inline void Voice::setFrequency(int frequencyTarget){
-  this->frequencyTarget = frequencyTarget;
+inline void Voice::setFrequency(int frequency){
+  this->frequency = frequency;
 }
 
 /**
  * Set the pan
  */
-inline void Voice::setPan(byte panTarget){
-  this->panTarget = panTarget;
+inline void Voice::setPan(byte pan){
+  this->pan = pan;
 }
 
 inline void Voice::update(){
-  if(this->frequencyTarget > this->freq){
-    this->freq += (this->frequencyTarget - this->freq) / ((float)this->intervalGlide / (float)updateMillis);
-  }else{
-    this->freq -= (this->freq - this->frequencyTarget) / ((float)this->intervalGlide / (float)updateMillis);
-  }
-
-  if(this->panTarget > this->pan){
-    this->pan += (this->panTarget - this->pan) / ((float)this->intervalGlide / (float)updateMillis);
-  }else{
-    this->pan -= (this->pan - this->panTarget) / ((float)this->intervalGlide / (float)updateMillis);
-  }
-
-  if(this->gainTarget > this->gain){
-    this->gain += (this->gainTarget - this->gain) / ((float)this->intervalGain / (float)updateMillis);
-  }else{
-    this->gain -= (this->gain - this->gainTarget) / ((float)this->intervalGain / (float)updateMillis);
-  }
-  
-  if(this->modulatorFrequencyTarget > this->modulatorFreq){
-    this->modulatorFreq += (this->modulatorFrequencyTarget - this->modulatorFreq) / ((float)this->intervalGlide / (float)updateMillis);
-  }else{
-    this->modulatorFreq -= (this->modulatorFreq - this->modulatorFrequencyTarget) / ((float)this->intervalGlide / (float)updateMillis);
-  }
-
-  if(this->modulatorAmplitudeTarget > this->modulatorAmp){
-    this->modulatorAmp += (this->modulatorAmplitudeTarget - this->modulatorAmp) / ((float)this->intervalGlide / (float)updateMillis);
-  }else{
-    this->modulatorAmp -= (this->modulatorAmp - this->modulatorAmplitudeTarget) / ((float)this->intervalGlide / (float)updateMillis);
-  }
-  
-  this->sineModulator->frequency(this->modulatorFreq);
-  this->sineModulator->amplitude(this->modulatorAmp);
-  this->sineFM->frequency(this->freq);
+  this->sineModulator->frequency(this->modulatorFrequency);
+  this->sineModulator->amplitude(this->modulatorAmplitude);
+  this->sineFM->frequency(this->frequency);
   this->outputLeft->gain(0, (float)map((float)this->pan, 0, 255, (float)1, (float)0) * this->gain);
   this->outputRight->gain(0, (float)map((float)this->pan, 0, 255, (float)0, (float)1) * this->gain);
 }
@@ -160,7 +129,7 @@ inline void Voice::setUpdateMillis(byte updateMillis){
   this->updateMillis = updateMillis;
 }
 
-inline void Voice::setGain(float gainTarget){
-  this->gainTarget = gainTarget;
+inline void Voice::setGain(float gain){
+  this->gain = gain;
 }
 #endif
