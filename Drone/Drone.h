@@ -100,6 +100,9 @@ inline void Drone::init(){
     }
   );
 
+  // Extra smooth
+  this->device->setPotentiometersSmoothness(255);
+
   // Device callbacks
   this->device->setHandlePotentiometerChange(0, onTuneChange);
   this->device->setHandlePotentiometerChange(1, onTuneChange);
@@ -155,10 +158,6 @@ inline void Drone::update(){
  * On Tune Change
  */
 inline void Drone::onTuneChange(byte inputIndex, unsigned int value, int diffToPrevious){
-  if(diffToPrevious >= -1 && diffToPrevious <= 1){
-    return;
-  }
-  
   unsigned int freq = (float)map(
     (float)value, 
     getInstance()->device->getAnalogMinValue(), 
@@ -190,10 +189,6 @@ void Drone::onMidiTuneChange(byte channel, byte control, byte value){
  * On Mix Change
  */
 inline void Drone::onMixChange(byte inputIndex, unsigned int value, int diffToPrevious){
-  if(diffToPrevious >= -1 && diffToPrevious <= 1){
-    return;
-  }
-     
   float mix = (float)map(
     (float)value, 
     getInstance()->device->getAnalogMinValue(), 
@@ -237,10 +232,6 @@ inline void Drone::onMidiMixChange(byte channel, byte control, byte value){
  * On Fm Change
  */
 inline void Drone::onFmChange(byte inputIndex, unsigned int value, int diffToPrevious){
-  if(diffToPrevious >= -1 && diffToPrevious <= 1){
-    return;
-  }
-  
   int modulatorFrequency = 0;
   float modulatorAmplitude = 0;
     

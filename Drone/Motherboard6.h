@@ -1,3 +1,6 @@
+#ifndef Motherboard6_h
+#define Motherboard6_h
+
 #include <vector> // This could be replaced with a custom type to reduce the program size
 #include <EEPROM.h>
 #include <MIDI.h>
@@ -5,11 +8,9 @@ MIDI_CREATE_DEFAULT_INSTANCE(); // MIDI library init
 
 /*
  * Motherboard6
- * v1.3.0
+ * v1.4.0
  */
-#ifndef Motherboard6_h
-#define Motherboard6_h
-
+ 
 enum InputType {
   None = 0,
   Button = 1,
@@ -33,21 +34,25 @@ class Motherboard6{
       // The serializable version of the config
       // Basically a duplicate but with a fixed size array instead of a vector or pointer array
       struct SerializableConfig {
+        char deviceName[20] = "";
         byte midiChannel = 0;
         MidiControl midiControlsArray[midiControlsListSize] = {};
       };
       
-      String deviceName = "Motherboard6";
+      char deviceName[20] = "Motherboard6";
       byte midiChannel = 0;
       std::vector<MidiControl> midiControls = {};
       
       void save(){
+        Serial.println("Saving config");
         SerializableConfig conf = {
+          deviceName: {},
           midiChannel: 0,
           {}
         };
 
         // Set the Midi channel
+        strcpy(conf.deviceName, this->deviceName);
         conf.midiChannel = this->midiChannel;
 
         // Set the Midi controls
@@ -72,13 +77,24 @@ class Motherboard6{
 
       void load(){
         SerializableConfig conf = {
+          deviceName: {},
           midiChannel: 0,
-          {}
+          {},
         };
-        
+
         EEPROM.get( 0, conf);
         delay(10);
         
+        // If the current device name is different than what's in memory,
+        // erase the memory
+        if (strcmp(this->deviceName, conf.deviceName) != 0){
+          Serial.println("Device name does not match : Erasing memory");
+          for (int i = 0 ; i < EEPROM.length() ; i++) {
+            EEPROM.write(i, 0);
+          }
+          this->save();
+        }
+
         this->midiChannel = conf.midiChannel;
 
         this->midiControls.clear();
@@ -140,7 +156,11 @@ class Motherboard6{
     bool *buttons;
     // Potentiometers
     unsigned int *potentiometers;
+    unsigned int *potentiometersTarget;
     unsigned int *potentiometersPrevious;
+    elapsedMillis clockUpdatePotentiometers;
+    byte updatePotentiometersMillis = 10;
+    byte intervalPotentiometers = 100;
     // For smoothing purposes
     unsigned int *potentiometersTemp;
     byte *potentiometersReadings;
@@ -265,6 +285,7 @@ class Motherboard6{
     void resetAllLED();
     void writeLED(byte index);
     void initSequence();
+    void setPotentiometersSmoothness(byte smoothness);
     int getInput(byte index);
     bool getEncoderSwitch(byte index);
     unsigned int getAnalogMaxValue();
@@ -303,6 +324,7 @@ inline Motherboard6::Motherboard6(){
   this->buttons = new bool[this->ioNumber];
   this->potentiometers = new unsigned int[this->ioNumber];
   this->potentiometersPrevious = new unsigned int[this->ioNumber];
+  this->potentiometersTarget = new unsigned int[this->ioNumber];
   this->potentiometersTemp = new unsigned int[this->ioNumber];
   this->potentiometersReadings = new byte[this->ioNumber];
   this->encoders = new int[this->ioNumber];
@@ -324,7 +346,8 @@ inline Motherboard6::Motherboard6(){
     this->ledsDuration[i] = 0;
     this->buttons[i] = true;
     this->potentiometers[i] = 0;
-    this->potentiometersPrevious[i] = 0;
+    this->potentiometersPrevious[i] = 1;
+    this->potentiometersTarget[i] = 0;
     this->potentiometersTemp[i] = 0;
     this->potentiometersReadings[i] = 0;
     this->encoders[i] = 0;
@@ -354,7 +377,7 @@ inline Motherboard6 *Motherboard6::getInstance() {
  * Init
  */
 inline void Motherboard6::init(String deviceName, std::initializer_list<InputType> inputs) {
-
+  
   // Init of the inputs
   byte i = 0;
   for(auto input : inputs){
@@ -363,7 +386,7 @@ inline void Motherboard6::init(String deviceName, std::initializer_list<InputTyp
   }
 
   // Config init
-  this->config.deviceName = deviceName;
+  strcpy(this->config.deviceName, deviceName.c_str());
   this->config.load();
   
   // Main multiplexer
@@ -438,6 +461,27 @@ inline void Motherboard6::update(){
     }
   }
 
+  // Updating potentiometers smoothed values
+  if(this->clockUpdatePotentiometers > this->updatePotentiometersMillis){
+    // Every 10ms loop and update every potentiometer's value to get closer to target
+    for(byte i = 0; i < this->ioNumber; i++){
+      if(this->potentiometersTarget[i] > this->potentiometers[i]){
+        this->potentiometers[i] += (this->potentiometersTarget[i] - this->potentiometers[i]) / ((float)this->intervalPotentiometers / (float)this->updatePotentiometersMillis);
+      }else{
+        this->potentiometers[i] -= (this->potentiometers[i] - this->potentiometersTarget[i]) / ((float)this->intervalPotentiometers / (float)this->updatePotentiometersMillis);
+      }
+  
+      if(this->potentiometers[i] != this->potentiometersPrevious[i]){
+        // Calling the potentiometer callback if there is one
+        this->triggerPotentiometerChangeCallback(i, this->potentiometers[i], this->potentiometers[i] - this->potentiometersPrevious[i]);
+      }
+
+      this->potentiometersPrevious[i] = this->potentiometers[i];
+    }
+
+    this->clockUpdatePotentiometers = 0;
+  }
+
   // Debug
   if (this->clockDebug >= 100) {
 //    this->printInputs();
@@ -449,7 +493,6 @@ inline void Motherboard6::update(){
   MIDI.read();
   usbMIDI.read();
 }
-
 
 /**
  * Main multiplexer on LEDs
@@ -730,18 +773,12 @@ inline void Motherboard6::readPotentiometer(byte inputIndex){
   this->potentiometersTemp[inputIndex] += analogRead(22);
   
   if(this->potentiometersReadings[inputIndex] == 255){
-    this->potentiometers[inputIndex] = this->potentiometersTemp[inputIndex] / 255; 
-    this->potentiometers[inputIndex] = map(this->potentiometers[inputIndex], this->getAnalogMinValue(), this->getAnalogMaxValue(), 0, 1023);
-    this->potentiometers[inputIndex] = constrain(this->potentiometers[inputIndex], (unsigned int)0, (unsigned int)1023);
-    
-    if(this->potentiometers[inputIndex] != this->potentiometersPrevious[inputIndex]){
-      // Calling the potentiometer callback if there is one
-      this->triggerPotentiometerChangeCallback(inputIndex, this->potentiometers[inputIndex], this->potentiometers[inputIndex] - this->potentiometersPrevious[inputIndex]);
-    }
+    this->potentiometersTarget[inputIndex] = this->potentiometersTemp[inputIndex] / 255; 
+    this->potentiometersTarget[inputIndex] = map(this->potentiometersTarget[inputIndex], this->getAnalogMinValue(), this->getAnalogMaxValue(), 0, 1023);
+    this->potentiometersTarget[inputIndex] = constrain(this->potentiometersTarget[inputIndex], (unsigned int)0, (unsigned int)1023);
     
     this->potentiometersReadings[inputIndex] = 0;
     this->potentiometersTemp[inputIndex] = 0;
-    this->potentiometersPrevious[inputIndex] = this->potentiometers[inputIndex];
   }
 }
 
@@ -995,6 +1032,13 @@ inline void Motherboard6::resetAllLED() {
 }
 
 /**
+ * Set potentiometers smoothness
+ */
+inline void Motherboard6::setPotentiometersSmoothness(byte smoothness){
+  this->intervalPotentiometers = map(smoothness, 0, 255, updatePotentiometersMillis / 2 + 1, 255);
+}
+
+/**
  * Get input value
  * @param byte index The index of the input
  */
@@ -1119,6 +1163,8 @@ inline void Motherboard6::writeLED(byte index){
  */
 inline void Motherboard6::setHandleMidiNoteOn(MidiNoteOnCallback fptr){
   this->midiNoteOnCallback = fptr;
+  MIDI.setHandleNoteOn(fptr);
+  usbMIDI.setHandleNoteOn(fptr);
 }
 
 /**
@@ -1126,6 +1172,8 @@ inline void Motherboard6::setHandleMidiNoteOn(MidiNoteOnCallback fptr){
  */
 inline void Motherboard6::setHandleMidiNoteOff(MidiNoteOffCallback fptr){
   this->midiNoteOffCallback = fptr;
+  MIDI.setHandleNoteOff(fptr);
+  usbMIDI.setHandleNoteOff(fptr);
 }
 
 /**
