@@ -33,6 +33,7 @@ class Drone{
     static Drone *getInstance();
     void init();
     void update();
+    void setPan(byte voiceIndex, byte pan);
     // Inputs callbacks
     static void onTuneChange(byte inputIndex, unsigned int value, int diffToPrevious);
     static void onMixChange(byte inputIndex, unsigned int value, int diffToPrevious);
@@ -75,7 +76,12 @@ inline Drone::Drone(){
     this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutputLeft(), 0, *this->outputLeft, i);
     this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutputRight(), 0, *this->outputRight, i);
   }
-  
+
+  // Set the pan programmatically
+//  this->setPan(0, 50);
+//  this->setPan(1, 100);
+//  this->setPan(2, 150);
+//  this->setPan(3, 200);
 }
 
 /**
@@ -152,6 +158,14 @@ inline void Drone::update(){
     
     this->clockUpdate = 0;
   }
+}
+
+/**
+ * Set one voice's pan
+ */
+inline void Drone::setPan(byte voiceIndex, byte pan){
+  voiceIndex = voiceIndex % 4;
+  this->voices[voiceIndex]->setPan(pan);
 }
 
 /**
