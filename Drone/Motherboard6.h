@@ -8,7 +8,7 @@ MIDI_CREATE_DEFAULT_INSTANCE(); // MIDI library init
 
 /*
  * Motherboard6
- * v1.4.0
+ * v1.4.1
  */
  
 enum InputType {
@@ -155,14 +155,15 @@ class Motherboard6{
     // Buttons
     bool *buttons;
     // Potentiometers
-    unsigned int *potentiometers;
+    float *potentiometers;
     unsigned int *potentiometersTarget;
-    unsigned int *potentiometersPrevious;
-    elapsedMillis clockUpdatePotentiometers;
-    byte updatePotentiometersMillis = 10;
-    byte intervalPotentiometers = 100;
+    float *potentiometersPrevious;
+    elapsedMicros clockUpdatePotentiometers;
+    byte updatePotentiometersMillis = 50;
+    float potentiometersSmoothness = 1;
     // For smoothing purposes
     unsigned int *potentiometersTemp;
+    unsigned int *potentiometersTempPrevious;
     byte *potentiometersReadings;
 
     // Encoders
@@ -226,14 +227,14 @@ class Motherboard6{
     LongPressUpCallback *inputsLongPressUpCallback;
     elapsedMillis *inputsPressTime;
     bool *inputsLongPressDownFired;
-    using PotentiometerChangeCallback = void (*)(byte, unsigned int, int);
+    using PotentiometerChangeCallback = void (*)(byte, float, int);
     PotentiometerChangeCallback *inputsPotentiometerChangeCallback;
     using RotaryChangeCallback = void (*)(bool);
     RotaryChangeCallback *inputsRotaryChangeCallback;
 
     // Callbacks triggers
     void triggerPressCallbacks(byte inputIndex, bool value);
-    void triggerPotentiometerChangeCallback(byte inputIndex, unsigned int value, unsigned int diff);
+    void triggerPotentiometerChangeCallback(byte inputIndex, float value, unsigned int diff);
     void triggerRotaryChangeCallback(byte inputIndex, bool value);
 
     // MIDI Callbacks
@@ -285,6 +286,7 @@ class Motherboard6{
     void resetAllLED();
     void writeLED(byte index);
     void initSequence();
+    void setPotentiometer(byte index, unsigned int value);
     void setPotentiometersSmoothness(byte smoothness);
     int getInput(byte index);
     bool getEncoderSwitch(byte index);
@@ -322,10 +324,11 @@ inline Motherboard6::Motherboard6(){
   this->ledsBrightness = new byte[this->ioNumber];
   this->ledsDuration = new unsigned int[this->ioNumber];
   this->buttons = new bool[this->ioNumber];
-  this->potentiometers = new unsigned int[this->ioNumber];
-  this->potentiometersPrevious = new unsigned int[this->ioNumber];
+  this->potentiometers = new float[this->ioNumber];
+  this->potentiometersPrevious = new float[this->ioNumber];
   this->potentiometersTarget = new unsigned int[this->ioNumber];
   this->potentiometersTemp = new unsigned int[this->ioNumber];
+  this->potentiometersTempPrevious = new unsigned int[this->ioNumber];
   this->potentiometersReadings = new byte[this->ioNumber];
   this->encoders = new int[this->ioNumber];
   this->encodersState = new byte[this->ioNumber];
@@ -349,6 +352,7 @@ inline Motherboard6::Motherboard6(){
     this->potentiometersPrevious[i] = 1;
     this->potentiometersTarget[i] = 0;
     this->potentiometersTemp[i] = 0;
+    this->potentiometersTempPrevious[i] = 0;
     this->potentiometersReadings[i] = 0;
     this->encoders[i] = 0;
     this->encodersState[i] = 0;
@@ -466,9 +470,9 @@ inline void Motherboard6::update(){
     // Every 10ms loop and update every potentiometer's value to get closer to target
     for(byte i = 0; i < this->ioNumber; i++){
       if(this->potentiometersTarget[i] > this->potentiometers[i]){
-        this->potentiometers[i] += (this->potentiometersTarget[i] - this->potentiometers[i]) / ((float)this->intervalPotentiometers / (float)this->updatePotentiometersMillis);
-      }else{
-        this->potentiometers[i] -= (this->potentiometers[i] - this->potentiometersTarget[i]) / ((float)this->intervalPotentiometers / (float)this->updatePotentiometersMillis);
+        this->potentiometers[i] += (potentiometersSmoothness * (this->potentiometersTarget[i] - this->potentiometers[i]) / 1024)  / (100 / (float)this->updatePotentiometersMillis);
+      }else if(this->potentiometersTarget[i] < this->potentiometers[i]){
+        this->potentiometers[i] -= (potentiometersSmoothness * (this->potentiometers[i] - this->potentiometersTarget[i]) / 1024)  / (100 / (float)this->updatePotentiometersMillis);
       }
   
       if(this->potentiometers[i] != this->potentiometersPrevious[i]){
@@ -773,16 +777,24 @@ inline void Motherboard6::readPotentiometer(byte inputIndex){
   this->potentiometersTemp[inputIndex] += analogRead(22);
   
   if(this->potentiometersReadings[inputIndex] == 255){
-    this->potentiometersTarget[inputIndex] = this->potentiometersTemp[inputIndex] / 255; 
-    this->potentiometersTarget[inputIndex] = map(this->potentiometersTarget[inputIndex], this->getAnalogMinValue(), this->getAnalogMaxValue(), 0, 1023);
-    this->potentiometersTarget[inputIndex] = constrain(this->potentiometersTarget[inputIndex], (unsigned int)0, (unsigned int)1023);
+    if((int)(this->potentiometersTemp[inputIndex] / 255 - this->potentiometersTempPrevious[inputIndex] / 255) < -2
+    || (this->potentiometersTemp[inputIndex] / 255 - this->potentiometersTempPrevious[inputIndex] / 255) > 2){
+      this->setPotentiometer(inputIndex, this->potentiometersTemp[inputIndex] / 255);
+      this->potentiometersTempPrevious[inputIndex] = this->potentiometersTemp[inputIndex];
+    }
     
     this->potentiometersReadings[inputIndex] = 0;
     this->potentiometersTemp[inputIndex] = 0;
   }
 }
 
-inline void Motherboard6::triggerPotentiometerChangeCallback(byte inputIndex, unsigned int value, unsigned int diff){
+inline void Motherboard6::setPotentiometer(byte index, unsigned int value){
+  this->potentiometersTarget[index] = value;
+  this->potentiometersTarget[index] = map(this->potentiometersTarget[index], this->getAnalogMinValue(), this->getAnalogMaxValue(), 0, 1023);
+  this->potentiometersTarget[index] = constrain(this->potentiometersTarget[index], (unsigned int)0, (unsigned int)1023);
+}
+
+inline void Motherboard6::triggerPotentiometerChangeCallback(byte inputIndex, float value, unsigned int diff){
   if(this->inputsPotentiometerChangeCallback[inputIndex] != nullptr){
     this->inputsPotentiometerChangeCallback[inputIndex](inputIndex, value, diff);
   }
@@ -1035,7 +1047,7 @@ inline void Motherboard6::resetAllLED() {
  * Set potentiometers smoothness
  */
 inline void Motherboard6::setPotentiometersSmoothness(byte smoothness){
-  this->intervalPotentiometers = map(smoothness, 0, 255, updatePotentiometersMillis / 2 + 1, 255);
+  this->potentiometersSmoothness = map((float)smoothness, 0, 255, 1, 0.05);
 }
 
 /**

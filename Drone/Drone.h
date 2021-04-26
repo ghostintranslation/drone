@@ -35,9 +35,9 @@ class Drone{
     void update();
     void setPan(byte voiceIndex, byte pan);
     // Inputs callbacks
-    static void onTuneChange(byte inputIndex, unsigned int value, int diffToPrevious);
-    static void onMixChange(byte inputIndex, unsigned int value, int diffToPrevious);
-    static void onFmChange(byte inputIndex, unsigned int value, int diffToPrevious);
+    static void onTuneChange(byte inputIndex, float value, int diffToPrevious);
+    static void onMixChange(byte inputIndex, float value, int diffToPrevious);
+    static void onFmChange(byte inputIndex, float value, int diffToPrevious);
     // Midi callbacks
     static void onMidiTuneChange(byte channel, byte control, byte value);
     static void onMidiMixChange(byte channel, byte control, byte value);
@@ -59,29 +59,28 @@ inline Drone::Drone(){
   this->device = Motherboard6::getInstance();
   
   this->outputLeft = new AudioMixer4();
-  this->outputLeft->gain(0, 1 );
-  this->outputLeft->gain(1, 1 );
-  this->outputLeft->gain(2, 1 );
-  this->outputLeft->gain(3, 1 );
+  this->outputLeft->gain(0, 1);
+  this->outputLeft->gain(1, 1);
+  this->outputLeft->gain(2, 1);
+  this->outputLeft->gain(3, 1);
   
   this->outputRight = new AudioMixer4();
-  this->outputRight->gain(0, 1 );
-  this->outputRight->gain(1, 1 );
-  this->outputRight->gain(2, 1 );
-  this->outputRight->gain(3, 1 );
+  this->outputRight->gain(0, 1);
+  this->outputRight->gain(1, 1);
+  this->outputRight->gain(2, 1);
+  this->outputRight->gain(3, 1);
   
   for (int i = 0; i < this->voiceCount; i++) {
     this->voices[i] = new Voice();
-    this->voices[i]->setUpdateMillis(this->updateMillis);
     this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutputLeft(), 0, *this->outputLeft, i);
     this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutputRight(), 0, *this->outputRight, i);
   }
 
   // Set the pan programmatically
-//  this->setPan(0, 50);
-//  this->setPan(1, 100);
-//  this->setPan(2, 150);
-//  this->setPan(3, 200);
+  this->setPan(0, 50);
+  this->setPan(1, 100);
+  this->setPan(2, 150);
+  this->setPan(3, 200);
 }
 
 /**
@@ -106,8 +105,8 @@ inline void Drone::init(){
     }
   );
 
-  // Extra smooth
-  this->device->setPotentiometersSmoothness(255);
+  // Medium smooth, up to 255
+  this->device->setPotentiometersSmoothness(127);
 
   // Device callbacks
   this->device->setHandlePotentiometerChange(0, onTuneChange);
@@ -150,14 +149,6 @@ inline AudioMixer4 * Drone::getOutputRight(){
  */
 inline void Drone::update(){
   this->device->update();
-
-  if(this->clockUpdate > updateMillis){
-    for (int i = 0; i < voiceCount ; i++) {
-      this->voices[i]->update();
-    }
-    
-    this->clockUpdate = 0;
-  }
 }
 
 /**
@@ -171,7 +162,7 @@ inline void Drone::setPan(byte voiceIndex, byte pan){
 /**
  * On Tune Change
  */
-inline void Drone::onTuneChange(byte inputIndex, unsigned int value, int diffToPrevious){
+inline void Drone::onTuneChange(byte inputIndex, float value, int diffToPrevious){
   unsigned int freq = (float)map(
     (float)value, 
     getInstance()->device->getAnalogMinValue(), 
@@ -179,7 +170,7 @@ inline void Drone::onTuneChange(byte inputIndex, unsigned int value, int diffToP
     10,
     1000
   );
-  
+
   getInstance()->voices[inputIndex]->setFrequency(freq);
 }
 
@@ -202,7 +193,7 @@ void Drone::onMidiTuneChange(byte channel, byte control, byte value){
 /**
  * On Mix Change
  */
-inline void Drone::onMixChange(byte inputIndex, unsigned int value, int diffToPrevious){
+inline void Drone::onMixChange(byte inputIndex, float value, int diffToPrevious){
   float mix = (float)map(
     (float)value, 
     getInstance()->device->getAnalogMinValue(), 
@@ -210,21 +201,21 @@ inline void Drone::onMixChange(byte inputIndex, unsigned int value, int diffToPr
     0,
     4*PI
   );
-  
-  float voice1Gain = constrain(100*cos(mix) + pow(mix,2), 0, 100);
-  float voice2Gain = constrain(100*cos(mix+1.5*PI) + pow(mix,2), 0, 100);
-  float voice3Gain = constrain(100*cos(mix+0.5*PI) + pow(mix,2), 0, 100);
-  float voice4Gain = constrain(100*cos(mix+PI) + pow(mix,2), 0, 100);
 
-  getInstance()->voices[0]->setGain(voice1Gain/400);
-  getInstance()->voices[1]->setGain(voice2Gain/400);
-  getInstance()->voices[2]->setGain(voice3Gain/400);
-  getInstance()->voices[3]->setGain(voice4Gain/400);
-      
-  getInstance()->device->setLED(0, 1, 2.5 * voice1Gain);
-  getInstance()->device->setLED(1, 1, 2.5 * voice2Gain);
-  getInstance()->device->setLED(2, 1, 2.5 * voice3Gain);
-  getInstance()->device->setLED(3, 1, 2.5 * voice4Gain);
+  float voice1Gain = constrain(100*cos(mix) + pow(mix,2), 0, 100)/400;
+  float voice2Gain = constrain(100*cos(mix+1.5*PI) + pow(mix,2), 0, 100)/400;
+  float voice3Gain = constrain(100*cos(mix+0.5*PI) + pow(mix,2), 0, 100)/400;
+  float voice4Gain = constrain(100*cos(mix+PI) + pow(mix,2), 0, 100)/400;
+
+  getInstance()->voices[0]->setGain(voice1Gain);
+  getInstance()->voices[1]->setGain(voice2Gain);
+  getInstance()->voices[2]->setGain(voice3Gain);
+  getInstance()->voices[3]->setGain(voice4Gain);
+
+  getInstance()->device->setLED(0, 1, 2.5 * voice1Gain * 400);
+  getInstance()->device->setLED(1, 1, 2.5 * voice2Gain * 400);
+  getInstance()->device->setLED(2, 1, 2.5 * voice3Gain * 400);
+  getInstance()->device->setLED(3, 1, 2.5 * voice4Gain * 400);
 }
 
 /**
@@ -239,13 +230,13 @@ inline void Drone::onMidiMixChange(byte channel, byte control, byte value){
     getInstance()->device->getAnalogMaxValue()
   );
 
-  getInstance()->onMixChange(0, mapValue, 255);
+  getInstance()->device->setPotentiometer(4, mapValue);
 }
 
 /**
  * On Fm Change
  */
-inline void Drone::onFmChange(byte inputIndex, unsigned int value, int diffToPrevious){
+inline void Drone::onFmChange(byte inputIndex, float value, int diffToPrevious){
   int modulatorFrequency = 0;
   float modulatorAmplitude = 0;
     
@@ -295,6 +286,7 @@ inline void Drone::onMidiFmChange(byte channel, byte control, byte value){
  * On MIDI Pan Change
  */
 inline void Drone::onMidiPanChange(byte channel, byte control, byte value){
+
     byte pan = map(
     value, 
     0,
