@@ -43,9 +43,8 @@ void setup() {
   
   audioBoard.enable();
   audioBoard.volume(0.4);
-  
 
-  // Starting sequence
+  // Ready!
   Serial.println("Ready!");
 }
 
