@@ -3,7 +3,7 @@
 
 #include <Audio.h>
 
-#include "Motherboard6.h"
+#include "Motherboard.h"
 #include "Voice.h"
 
 /*
@@ -17,7 +17,7 @@ class Drone{
     Drone();
 
     // Motherboard
-    Motherboard6 *device;
+    Motherboard *device;
     
     static const byte voiceCount = 4;
     Voice *voices[voiceCount];
@@ -54,10 +54,7 @@ Drone * Drone::instance = nullptr;
 /**
  * Constructor
  */
-inline Drone::Drone(){
-
-  this->device = Motherboard6::getInstance();
-  
+inline Drone::Drone(){  
   this->outputLeft = new AudioMixer4();
   this->outputLeft->gain(0, 1);
   this->outputLeft->gain(1, 1);
@@ -96,7 +93,8 @@ inline Drone *Drone::getInstance()    {
  * Init
  */
 inline void Drone::init(){
-  device->init(
+  // Motherboard init
+  device = Motherboard::init(
     "Drone",
     {
       Potentiometer, Potentiometer,
