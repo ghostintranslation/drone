@@ -4,9 +4,10 @@
 \_|| |\_/__) |    _|_| |    | | \| || |__)|__| | | _|_\_/| |
 
 DRONE
-v1.1.3
+v1.2.0
 
-If you enjoy my work and music please consider donating.
+Support my work:
+https://www.paypal.com/paypalme/ghostintranslation
 
 https://www.ghostintranslation.com/
 https://ghostintranslation.bandcamp.com/
@@ -42,9 +43,8 @@ void setup() {
   
   audioBoard.enable();
   audioBoard.volume(0.4);
-  
 
-  // Starting sequence
+  // Ready!
   Serial.println("Ready!");
 }
 

@@ -4,7 +4,12 @@
 
 DRONE is a modular 4 voices drone synthesizer, based on eurorack physical format it has however no patch cables in the front but has rather midi and audio jacks in the back.
 
-It is based on [Motherboard6](https://github.com/ghostintranslation/motherboard6).
+It is based on [Motherboard](https://github.com/ghostintranslation/motherboard), my modular platform, see in there for schematics.
+
+You can get the PCBs and front panel here:<br/>
+https://ghostintranslation.bandcamp.com/merch/drone-panel-and-pcb
+
+<img src="drone-black.jpg" width="300px"/> <img src="drone-white.jpg" width="300px"/>
 
 ## Features
 
@@ -14,6 +19,7 @@ It is based on [Motherboard6](https://github.com/ghostintranslation/motherboard6
 * MIDI over USB
 * MIDI over mini jack
 * Audio jack output
+* Audio output over USB
 
 ## Dimensions
 
@@ -35,6 +41,7 @@ What things you need to make it work:
 1 DRONE front panel pcb
 6 vertical linear 10k potentiometers with their nuts
 1 5 pins male header
+1 5 pins female headers
 5 14 pins male header
 5 14 pins female header
 2 14 pins long female header
@@ -69,7 +76,7 @@ Note:
 
 Note: Be careful how you place the potentiometers:
 
-<img src="https://github.com/ghostintranslation/motherboard6/blob/master/input-traces.png" width="200px"/>
+<img src="https://github.com/ghostintranslation/motherboard/raw/main/input-traces.png" width="200px"/>
 
 ### Firmware
 
@@ -78,7 +85,7 @@ Follow the instructions from the official page:
 https://www.pjrc.com/teensy/teensyduino.html
 
 1. Then open `Drone.ino` located in the `Drone` folder of this repo.
-2. In the Tools -> USB Type menu, choose `Serial + midi`.
+2. In the Tools -> USB Type menu, choose `Serial + midi + audio`.
 3. Plug the Teensy to your computer with a micro USB cable. (It's ok if the Teensy is on the module)
 4. Then just click the arrow button to upload the code
 
@@ -129,10 +136,6 @@ These settings can be changed in the code or via the web editor: http://ghostint
 
 The MIDI input and output jacks are directly connected to the Teensy serial input and output. That means there is not protection against voltage or current. It is primarily ment to connect 2 of these modules, or 2 Teensy together. If you want to connect something else to it make sure to provide a maximum of 3.3v and 250 mA.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
 # About me
 You can find me on Bandcamp, Instagram, Youtube and my own site:
 
@@ -143,3 +146,11 @@ https://www.instagram.com/ghostintranslation/
 https://www.youtube.com/channel/UCcyUTGTM-hGLIz4194Inxyw
 
 https://www.ghostintranslation.com/
+
+# Support
+To support my work:<br>
+https://www.paypal.com/paypalme/ghostintranslation
+
+# License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
