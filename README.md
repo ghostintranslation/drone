@@ -76,7 +76,7 @@ Note:
 
 Note: Be careful how you place the potentiometers:
 
-<img src="https://github.com/ghostintranslation/motherboard/blob/master/input-traces.png" width="200px"/>
+<img src="https://github.com/ghostintranslation/motherboard/raw/main/input-traces.png" width="200px"/>
 
 ### Firmware
 
