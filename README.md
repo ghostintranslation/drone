@@ -4,7 +4,12 @@
 
 DRONE is a modular 4 voices drone synthesizer, based on eurorack physical format it has however no patch cables in the front but has rather midi and audio jacks in the back.
 
-It is based on [Motherboard6](https://github.com/ghostintranslation/motherboard6).
+It is based on [Motherboard](https://github.com/ghostintranslation/motherboard), my modular platform, see in there for schematics.
+
+You can get the PCBs and front panel here:<br/>
+https://ghostintranslation.bandcamp.com/merch/drone-panel-and-pcb
+
+<img src="drone-black.jpg" width="300px"/> <img src="drone-white.jpg" width="300px"/>
 
 ## Features
 
@@ -71,7 +76,7 @@ Note:
 
 Note: Be careful how you place the potentiometers:
 
-<img src="https://github.com/ghostintranslation/motherboard6/blob/master/input-traces.png" width="200px"/>
+<img src="https://github.com/ghostintranslation/motherboard/blob/master/input-traces.png" width="200px"/>
 
 ### Firmware
 
