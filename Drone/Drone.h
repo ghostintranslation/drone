@@ -18,7 +18,19 @@ class Drone{
 
     // Motherboard
     Motherboard *device;
-    
+
+    // Inputs
+    Input* tune1;
+    Input* tune2;
+    Input* tune3;
+    Input* tune4;
+    Input* mix;
+    Input* fm;
+
+    // Leds
+    Led* led1;
+    Led* led2;
+
     static const byte voiceCount = 4;
     Voice *voices[voiceCount];
 
@@ -34,15 +46,12 @@ class Drone{
     void init();
     void update();
     void setPan(byte voiceIndex, byte pan);
+
     // Inputs callbacks
-    static void onTuneChange(byte inputIndex, float value, int diffToPrevious);
-    static void onMixChange(byte inputIndex, float value, int diffToPrevious);
-    static void onFmChange(byte inputIndex, float value, int diffToPrevious);
-    // Midi callbacks
-    static void onMidiTuneChange(byte channel, byte control, byte value);
-    static void onMidiMixChange(byte channel, byte control, byte value);
-    static void onMidiFmChange(byte channel, byte control, byte value);
-    static void onMidiPanChange(byte channel, byte control, byte value);
+    static void onTuneChange(Input* input);
+    static void onMixChange(Input* input);
+    static void onFmChange(Input* input);
+
     // Audio output
     AudioMixer4 * getOutputLeft();
     AudioMixer4 * getOutputRight();
@@ -55,6 +64,31 @@ Drone * Drone::instance = nullptr;
  * Constructor
  */
 inline Drone::Drone(){  
+
+  this->tune1 = new Input(0);
+  this->tune1->setRange(10, 1000);
+  this->tune1->setOnChange(onTuneChange);
+
+  this->tune2 = new Input(1);
+  this->tune2->setRange(10, 1000);
+  this->tune2->setOnChange(onTuneChange);
+
+  this->tune3 = new Input(2);
+  this->tune3->setRange(10, 1000);
+  this->tune3->setOnChange(onTuneChange);
+
+  this->tune4 = new Input(3);
+  this->tune4->setRange(10, 1000);
+  this->tune4->setOnChange(onTuneChange);
+
+  this->mix = new Input(4);
+  this->mix->setRange(0, 4*PI);
+  
+  this->fm = new Input(5);
+
+  this->led1 = new Led(0);
+  this->led2 = new Led(1);
+
   this->outputLeft = new AudioMixer4();
   this->outputLeft->gain(0, 1);
   this->outputLeft->gain(1, 1);
@@ -93,38 +127,6 @@ inline Drone *Drone::getInstance()    {
  * Init
  */
 inline void Drone::init(){
-  // Motherboard init
-  device = Motherboard::init(
-    "Drone",
-    {
-      Potentiometer, Potentiometer,
-      Potentiometer, Potentiometer,
-      Potentiometer, Potentiometer
-    }
-  );
-
-  // Medium smooth, up to 255
-  this->device->setPotentiometersSmoothness(127);
-
-  // Device callbacks
-  this->device->setHandlePotentiometerChange(0, onTuneChange);
-  this->device->setHandlePotentiometerChange(1, onTuneChange);
-  this->device->setHandlePotentiometerChange(2, onTuneChange);
-  this->device->setHandlePotentiometerChange(3, onTuneChange);
-  this->device->setHandlePotentiometerChange(4, onMixChange);
-  this->device->setHandlePotentiometerChange(5, onFmChange);
-
-  // MIDI callbacks
-  device->setHandleMidiControlChange(0, 0, "Tune 1", onMidiTuneChange);
-  device->setHandleMidiControlChange(0, 1, "Tune 2", onMidiTuneChange);
-  device->setHandleMidiControlChange(0, 2, "Tune 3", onMidiTuneChange);
-  device->setHandleMidiControlChange(0, 3, "Tune 4", onMidiTuneChange);
-  device->setHandleMidiControlChange(0, 4, "Mix",    onMidiMixChange);
-  device->setHandleMidiControlChange(0, 5, "FM",     onMidiFmChange);
-  device->setHandleMidiControlChange(0, 6, "Pan 1",  onMidiPanChange);
-  device->setHandleMidiControlChange(0, 7, "Pan 2",  onMidiPanChange);
-  device->setHandleMidiControlChange(0, 8, "Pan 3",  onMidiPanChange);
-  device->setHandleMidiControlChange(0, 9, "Pan 4",  onMidiPanChange);
 }
 
 
@@ -160,94 +162,47 @@ inline void Drone::setPan(byte voiceIndex, byte pan){
 /**
  * On Tune Change
  */
-inline void Drone::onTuneChange(byte inputIndex, float value, int diffToPrevious){
-  unsigned int freq = (float)map(
-    (float)value, 
-    getInstance()->device->getAnalogMinValue(), 
-    getInstance()->device->getAnalogMaxValue(),
-    10,
-    1000
-  );
-
-  getInstance()->voices[inputIndex]->setFrequency(freq);
-}
-
-
-/**
- * On MIDI Tune Change
- */
-void Drone::onMidiTuneChange(byte channel, byte control, byte value){
-  unsigned int mapValue = map(
-    value, 
-    0,
-    127,
-    getInstance()->device->getAnalogMinValue(), 
-    getInstance()->device->getAnalogMaxValue()
-  );
-  
-  getInstance()->onTuneChange(control, mapValue, 255);
+inline void Drone::onTuneChange(Input* input){
+  getInstance()->voices[input->getIndex()]->setFrequency(input->getValue());
 }
 
 /**
  * On Mix Change
  */
-inline void Drone::onMixChange(byte inputIndex, float value, int diffToPrevious){
-  float mix = (float)map(
-    (float)value, 
-    getInstance()->device->getAnalogMinValue(), 
-    getInstance()->device->getAnalogMaxValue(),
-    0,
-    4*PI
-  );
-
-  float voice1Gain = constrain(100*cos(mix) + pow(mix,2), 0, 100)/400;
-  float voice2Gain = constrain(100*cos(mix+1.5*PI) + pow(mix,2), 0, 100)/400;
-  float voice3Gain = constrain(100*cos(mix+0.5*PI) + pow(mix,2), 0, 100)/400;
-  float voice4Gain = constrain(100*cos(mix+PI) + pow(mix,2), 0, 100)/400;
+inline void Drone::onMixChange(Input* input){
+  float voice1Gain = constrain(100*cos(input->getValue()) + pow(input->getValue(),2), 0, 100)/400;
+  float voice2Gain = constrain(100*cos(input->getValue()+1.5*PI) + pow(input->getValue(),2), 0, 100)/400;
+  float voice3Gain = constrain(100*cos(input->getValue()+0.5*PI) + pow(input->getValue(),2), 0, 100)/400;
+  float voice4Gain = constrain(100*cos(input->getValue()+PI) + pow(input->getValue(),2), 0, 100)/400;
 
   getInstance()->voices[0]->setGain(voice1Gain);
   getInstance()->voices[1]->setGain(voice2Gain);
   getInstance()->voices[2]->setGain(voice3Gain);
   getInstance()->voices[3]->setGain(voice4Gain);
 
-  getInstance()->device->setLED(0, 1, 2.5 * voice1Gain * 400);
-  getInstance()->device->setLED(1, 1, 2.5 * voice2Gain * 400);
-  getInstance()->device->setLED(2, 1, 2.5 * voice3Gain * 400);
-  getInstance()->device->setLED(3, 1, 2.5 * voice4Gain * 400);
-}
-
-/**
- * On MIDI Mix Change
- */
-inline void Drone::onMidiMixChange(byte channel, byte control, byte value){
-    unsigned int mapValue = map(
-    value, 
-    0,
-    127,
-    getInstance()->device->getAnalogMinValue(), 
-    getInstance()->device->getAnalogMaxValue()
-  );
-
-  getInstance()->device->setPotentiometer(4, mapValue);
+  getInstance()->device->setLED(0, 1, 32768 * voice1Gain * 4);
+  getInstance()->device->setLED(1, 1, 32768 * voice2Gain * 4);
+  getInstance()->device->setLED(2, 1, 32768 * voice3Gain * 4);
+  getInstance()->device->setLED(3, 1, 32768 * voice4Gain * 4);
 }
 
 /**
  * On Fm Change
  */
-inline void Drone::onFmChange(byte inputIndex, float value, int diffToPrevious){
+inline void Drone::onFmChange(Input* input){
   int modulatorFrequency = 0;
   float modulatorAmplitude = 0;
     
-  if(value < getInstance()->device->getAnalogMaxValue() / 3){
-    modulatorFrequency = map(value, 0, getInstance()->device->getAnalogMaxValue() / 2, 0, 10);
-    modulatorAmplitude = (float)map((float)value, 0, getInstance()->device->getAnalogMaxValue() / 2, 0.001, .01);
+  if(input->getValue() < getInstance()->device->getAnalogMaxValue() / 3){
+    modulatorFrequency = map(input->getValue(), 0, getInstance()->device->getAnalogMaxValue() / 2, 0, 10);
+    modulatorAmplitude = (float)map((float)input->getValue(), 0, getInstance()->device->getAnalogMaxValue() / 2, 0.001, .01);
   }
-  else if(value >= getInstance()->device->getAnalogMaxValue() / 3 && value < getInstance()->device->getAnalogMaxValue() / 2){
-    modulatorFrequency = map(value, 0, getInstance()->device->getAnalogMaxValue() / 2, 0, 40);
-    modulatorAmplitude = (float)map((float)value, 0, getInstance()->device->getAnalogMaxValue() / 2, 0.001, .01);
+  else if(input->getValue() >= getInstance()->device->getAnalogMaxValue() / 3 && input->getValue() < getInstance()->device->getAnalogMaxValue() / 2){
+    modulatorFrequency = map(input->getValue(), 0, getInstance()->device->getAnalogMaxValue() / 2, 0, 40);
+    modulatorAmplitude = (float)map((float)input->getValue(), 0, getInstance()->device->getAnalogMaxValue() / 2, 0.001, .01);
   }else{
-    modulatorFrequency = map(value, getInstance()->device->getAnalogMaxValue() / 2, getInstance()->device->getAnalogMaxValue(), 0, 1000);
-    modulatorAmplitude = (float)map((float)value, getInstance()->device->getAnalogMaxValue() / 2, getInstance()->device->getAnalogMaxValue(), 0, .5);
+    modulatorFrequency = map(input->getValue(), getInstance()->device->getAnalogMaxValue() / 2, getInstance()->device->getAnalogMaxValue(), 0, 1000);
+    modulatorAmplitude = (float)map((float)input->getValue(), getInstance()->device->getAnalogMaxValue() / 2, getInstance()->device->getAnalogMaxValue(), 0, .5);
   }
     
   for (int i = 0; i < getInstance()->voiceCount ; i++) {
@@ -263,37 +218,5 @@ inline void Drone::onFmChange(byte inputIndex, float value, int diffToPrevious){
       getInstance()->voices[i]->setModulatorAmplitude(0);
     }
   }
-}
-
-/**
- * On MIDI Fm Change
- */
-inline void Drone::onMidiFmChange(byte channel, byte control, byte value){
-    unsigned int mapValue = map(
-    value, 
-    0,
-    127,
-    getInstance()->device->getAnalogMinValue(), 
-    getInstance()->device->getAnalogMaxValue()
-  );
-
-  getInstance()->onFmChange(0, mapValue, 255);
-}
-
-/**
- * On MIDI Pan Change
- */
-inline void Drone::onMidiPanChange(byte channel, byte control, byte value){
-
-    byte pan = map(
-    value, 
-    0,
-    127,
-    0, 
-    255
-  );
-
-  byte inputIndex = control - 6;
-  getInstance()->voices[inputIndex]->setPan(pan);
 }
 #endif
