@@ -25,7 +25,7 @@ AudioConnection          patchCord6(ampRight, 0, is2, 1);
 /*
  * Voice
  */
-class Voice : public AudioStream
+class Voice : public AudioStream {
   private:
     audio_block_t *inputQueueArray[2];
 

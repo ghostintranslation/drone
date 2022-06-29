@@ -5,6 +5,7 @@
 
 #include "Motherboard.h"
 #include "Voice.h"
+#include "LinearToSpiral.h"
 
 /*
  * Drone
@@ -30,6 +31,11 @@ class Drone{
     // Leds
     Led* led1;
     Led* led2;
+    Led* led3;
+    Led* led4;
+
+    // Linear to Spiral converter
+    LinearToSpiral* linearToSpiral;
 
     static const byte voiceCount = 4;
     Voice *voices[voiceCount];
@@ -37,7 +43,6 @@ class Drone{
     byte updateMillis = 10;
     elapsedMillis clockUpdate;
 
-    AudioConnection* patchCords[4]; 
     AudioMixer4 *outputLeft;
     AudioMixer4 *outputRight;
     
@@ -83,11 +88,14 @@ inline Drone::Drone(){
 
   this->mix = new Input(4);
   this->mix->setRange(0, 4*PI);
+  this->linearToSpiral = new LinearToSpiral();
   
   this->fm = new Input(5);
 
   this->led1 = new Led(0);
   this->led2 = new Led(1);
+  this->led3 = new Led(2);
+  this->led4 = new Led(3);
 
   this->outputLeft = new AudioMixer4();
   this->outputLeft->gain(0, 1);
@@ -101,16 +109,26 @@ inline Drone::Drone(){
   this->outputRight->gain(2, 1);
   this->outputRight->gain(3, 1);
   
+  // TODO: MAKE VOICE DIRECTLY OUTPUT AUDIO
   for (int i = 0; i < this->voiceCount; i++) {
     this->voices[i] = new Voice();
-    this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutputLeft(), 0, *this->outputLeft, i);
-    this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutputRight(), 0, *this->outputRight, i);
+    new AudioConnection(*this->voices[i]->getOutputLeft(), 0, *this->outputLeft, i);
+    new AudioConnection(*this->voices[i]->getOutputRight(), 0, *this->outputRight, i);
   }
 
   new AudioConnection(*this->tune1, 0, *this->voices[0], 0);
   new AudioConnection(*this->tune2, 0, *this->voices[1], 0);
   new AudioConnection(*this->tune3, 0, *this->voices[2], 0);
   new AudioConnection(*this->tune4, 0, *this->voices[3], 0);
+  new AudioConnection(*this->voices[0], 1, *this->linearToSpiral, 0);
+  new AudioConnection(*this->voices[1], 1, *this->linearToSpiral, 1);
+  new AudioConnection(*this->voices[2], 1, *this->linearToSpiral, 2);
+  new AudioConnection(*this->voices[3], 1, *this->linearToSpiral, 3);
+  new AudioConnection(*this->led1, 1, *this->linearToSpiral, 0);
+  new AudioConnection(*this->led2, 1, *this->linearToSpiral, 1);
+  new AudioConnection(*this->led3, 1, *this->linearToSpiral, 2);
+  new AudioConnection(*this->led4, 1, *this->linearToSpiral, 3);
+  new AudioConnection(*this->fm, 0, *this->linearToSpiral, 0);
 
   // Set the pan programmatically
   this->setPan(0, 50);
@@ -174,22 +192,22 @@ inline void Drone::setPan(byte voiceIndex, byte pan){
 /**
  * On Mix Change
  */
-inline void Drone::onMixChange(Input* input){
-  float voice1Gain = constrain(100*cos(input->getValue()) + pow(input->getValue(),2), 0, 100)/400;
-  float voice2Gain = constrain(100*cos(input->getValue()+1.5*PI) + pow(input->getValue(),2), 0, 100)/400;
-  float voice3Gain = constrain(100*cos(input->getValue()+0.5*PI) + pow(input->getValue(),2), 0, 100)/400;
-  float voice4Gain = constrain(100*cos(input->getValue()+PI) + pow(input->getValue(),2), 0, 100)/400;
+// inline void Drone::onMixChange(Input* input){
+//   float voice1Gain = constrain(100*cos(input->getValue()) + pow(input->getValue(),2), 0, 100)/400;
+//   float voice2Gain = constrain(100*cos(input->getValue()+1.5*PI) + pow(input->getValue(),2), 0, 100)/400;
+//   float voice3Gain = constrain(100*cos(input->getValue()+0.5*PI) + pow(input->getValue(),2), 0, 100)/400;
+//   float voice4Gain = constrain(100*cos(input->getValue()+PI) + pow(input->getValue(),2), 0, 100)/400;
 
-  getInstance()->voices[0]->setGain(voice1Gain);
-  getInstance()->voices[1]->setGain(voice2Gain);
-  getInstance()->voices[2]->setGain(voice3Gain);
-  getInstance()->voices[3]->setGain(voice4Gain);
+//   getInstance()->voices[0]->setGain(voice1Gain);
+//   getInstance()->voices[1]->setGain(voice2Gain);
+//   getInstance()->voices[2]->setGain(voice3Gain);
+//   getInstance()->voices[3]->setGain(voice4Gain);
 
-  getInstance()->device->setLED(0, 1, 32768 * voice1Gain * 4);
-  getInstance()->device->setLED(1, 1, 32768 * voice2Gain * 4);
-  getInstance()->device->setLED(2, 1, 32768 * voice3Gain * 4);
-  getInstance()->device->setLED(3, 1, 32768 * voice4Gain * 4);
-}
+//   getInstance()->device->setLED(0, 1, 32768 * voice1Gain * 4);
+//   getInstance()->device->setLED(1, 1, 32768 * voice2Gain * 4);
+//   getInstance()->device->setLED(2, 1, 32768 * voice3Gain * 4);
+//   getInstance()->device->setLED(3, 1, 32768 * voice4Gain * 4);
+// }
 
 /**
  * On Fm Change
