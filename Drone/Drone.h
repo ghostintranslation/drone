@@ -48,8 +48,8 @@ class Drone{
     void setPan(byte voiceIndex, byte pan);
 
     // Inputs callbacks
-    static void onTuneChange(Input* input);
-    static void onMixChange(Input* input);
+    // static void onTuneChange(Input* input);
+    static void onMixChange(Input* input); // TODO: CREATE A SPIRAL CONVERTER TO ELIMINATE THIS CALLBACK
     static void onFmChange(Input* input);
 
     // Audio output
@@ -67,19 +67,19 @@ inline Drone::Drone(){
 
   this->tune1 = new Input(0);
   this->tune1->setRange(10, 1000);
-  this->tune1->setOnChange(onTuneChange);
+  // this->tune1->setOnChange(onTuneChange);
 
   this->tune2 = new Input(1);
   this->tune2->setRange(10, 1000);
-  this->tune2->setOnChange(onTuneChange);
+  // this->tune2->setOnChange(onTuneChange);
 
   this->tune3 = new Input(2);
   this->tune3->setRange(10, 1000);
-  this->tune3->setOnChange(onTuneChange);
+  // this->tune3->setOnChange(onTuneChange);
 
   this->tune4 = new Input(3);
   this->tune4->setRange(10, 1000);
-  this->tune4->setOnChange(onTuneChange);
+  // this->tune4->setOnChange(onTuneChange);
 
   this->mix = new Input(4);
   this->mix->setRange(0, 4*PI);
@@ -106,6 +106,11 @@ inline Drone::Drone(){
     this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutputLeft(), 0, *this->outputLeft, i);
     this->patchCords[i] = new AudioConnection(*this->voices[i]->getOutputRight(), 0, *this->outputRight, i);
   }
+
+  new AudioConnection(*this->tune1, 0, *this->voices[0], 0);
+  new AudioConnection(*this->tune2, 0, *this->voices[1], 0);
+  new AudioConnection(*this->tune3, 0, *this->voices[2], 0);
+  new AudioConnection(*this->tune4, 0, *this->voices[3], 0);
 
   // Set the pan programmatically
   this->setPan(0, 50);
@@ -162,9 +167,9 @@ inline void Drone::setPan(byte voiceIndex, byte pan){
 /**
  * On Tune Change
  */
-inline void Drone::onTuneChange(Input* input){
-  getInstance()->voices[input->getIndex()]->setFrequency(input->getValue());
-}
+// inline void Drone::onTuneChange(Input* input){
+//   getInstance()->voices[input->getIndex()]->setFrequency(input->getValue());
+// }
 
 /**
  * On Mix Change
