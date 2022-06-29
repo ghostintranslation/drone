@@ -71,20 +71,12 @@ Drone * Drone::instance = nullptr;
 inline Drone::Drone(){  
 
   this->tune1 = new Input(0);
-  this->tune1->setRange(10, 1000);
-  // this->tune1->setOnChange(onTuneChange);
 
   this->tune2 = new Input(1);
-  this->tune2->setRange(10, 1000);
-  // this->tune2->setOnChange(onTuneChange);
 
   this->tune3 = new Input(2);
-  this->tune3->setRange(10, 1000);
-  // this->tune3->setOnChange(onTuneChange);
 
   this->tune4 = new Input(3);
-  this->tune4->setRange(10, 1000);
-  // this->tune4->setOnChange(onTuneChange);
 
   this->mix = new Input(4);
   this->mix->setRange(0, 4*PI);
@@ -120,14 +112,15 @@ inline Drone::Drone(){
   new AudioConnection(*this->tune2, 0, *this->voices[1], 0);
   new AudioConnection(*this->tune3, 0, *this->voices[2], 0);
   new AudioConnection(*this->tune4, 0, *this->voices[3], 0);
-  new AudioConnection(*this->voices[0], 1, *this->linearToSpiral, 0);
-  new AudioConnection(*this->voices[1], 1, *this->linearToSpiral, 1);
-  new AudioConnection(*this->voices[2], 1, *this->linearToSpiral, 2);
-  new AudioConnection(*this->voices[3], 1, *this->linearToSpiral, 3);
-  new AudioConnection(*this->led1, 1, *this->linearToSpiral, 0);
-  new AudioConnection(*this->led2, 1, *this->linearToSpiral, 1);
-  new AudioConnection(*this->led3, 1, *this->linearToSpiral, 2);
-  new AudioConnection(*this->led4, 1, *this->linearToSpiral, 3);
+  new AudioConnection(*this->mix, 0, *this->linearToSpiral, 0);
+  new AudioConnection(*this->linearToSpiral, 0, *this->voices[0], 1);
+  new AudioConnection(*this->linearToSpiral, 1, *this->voices[1], 1);
+  new AudioConnection(*this->linearToSpiral, 2, *this->voices[2], 1);
+  new AudioConnection(*this->linearToSpiral, 3, *this->voices[3], 1);
+  new AudioConnection(*this->linearToSpiral, 0, *this->led1, 0);
+  new AudioConnection(*this->linearToSpiral, 1, *this->led2, 0);
+  new AudioConnection(*this->linearToSpiral, 2, *this->led3, 0);
+  new AudioConnection(*this->linearToSpiral, 3, *this->led4, 0);
   new AudioConnection(*this->fm, 0, *this->linearToSpiral, 0);
 
   // Set the pan programmatically
@@ -183,63 +176,30 @@ inline void Drone::setPan(byte voiceIndex, byte pan){
 }
 
 /**
- * On Tune Change
- */
-// inline void Drone::onTuneChange(Input* input){
-//   getInstance()->voices[input->getIndex()]->setFrequency(input->getValue());
-// }
-
-/**
- * On Mix Change
- */
-// inline void Drone::onMixChange(Input* input){
-//   float voice1Gain = constrain(100*cos(input->getValue()) + pow(input->getValue(),2), 0, 100)/400;
-//   float voice2Gain = constrain(100*cos(input->getValue()+1.5*PI) + pow(input->getValue(),2), 0, 100)/400;
-//   float voice3Gain = constrain(100*cos(input->getValue()+0.5*PI) + pow(input->getValue(),2), 0, 100)/400;
-//   float voice4Gain = constrain(100*cos(input->getValue()+PI) + pow(input->getValue(),2), 0, 100)/400;
-
-//   getInstance()->voices[0]->setGain(voice1Gain);
-//   getInstance()->voices[1]->setGain(voice2Gain);
-//   getInstance()->voices[2]->setGain(voice3Gain);
-//   getInstance()->voices[3]->setGain(voice4Gain);
-
-//   getInstance()->device->setLED(0, 1, 32768 * voice1Gain * 4);
-//   getInstance()->device->setLED(1, 1, 32768 * voice2Gain * 4);
-//   getInstance()->device->setLED(2, 1, 32768 * voice3Gain * 4);
-//   getInstance()->device->setLED(3, 1, 32768 * voice4Gain * 4);
-// }
-
-/**
  * On Fm Change
  */
 inline void Drone::onFmChange(Input* input){
   int modulatorFrequency = 0;
   float modulatorAmplitude = 0;
     
-  if(input->getValue() < getInstance()->device->getAnalogMaxValue() / 3){
-    modulatorFrequency = map(input->getValue(), 0, getInstance()->device->getAnalogMaxValue() / 2, 0, 10);
-    modulatorAmplitude = (float)map((float)input->getValue(), 0, getInstance()->device->getAnalogMaxValue() / 2, 0.001, .01);
+  if(input->getValue() < ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3){
+    modulatorFrequency = map(input->getValue(), 0, ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3, 0, 10);
+    modulatorAmplitude = (float)map((float)input->getValue(), 0, ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3, 0, .01);
   }
-  else if(input->getValue() >= getInstance()->device->getAnalogMaxValue() / 3 && input->getValue() < getInstance()->device->getAnalogMaxValue() / 2){
-    modulatorFrequency = map(input->getValue(), 0, getInstance()->device->getAnalogMaxValue() / 2, 0, 40);
-    modulatorAmplitude = (float)map((float)input->getValue(), 0, getInstance()->device->getAnalogMaxValue() / 2, 0.001, .01);
+  else if(input->getValue() >= ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3 && input->getValue() < ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3 * 2){
+    modulatorFrequency = map(input->getValue(), ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3, ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3 * 2, 0, 40);
+    modulatorAmplitude = (float)map((float)input->getValue(), ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3, ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3 * 2, 0, .01);
   }else{
-    modulatorFrequency = map(input->getValue(), getInstance()->device->getAnalogMaxValue() / 2, getInstance()->device->getAnalogMaxValue(), 0, 1000);
-    modulatorAmplitude = (float)map((float)input->getValue(), getInstance()->device->getAnalogMaxValue() / 2, getInstance()->device->getAnalogMaxValue(), 0, .5);
+    modulatorFrequency = map(input->getValue(), ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3 * 2, ABSOLUTE_ANALOG_MAX, 0, 1000);
+    modulatorAmplitude = (float)map((float)input->getValue(), ABSOLUTE_ANALOG_MIN + ANALOG_RANGE / 3 * 2, ABSOLUTE_ANALOG_MAX, 0, .5);
   }
     
   for (int i = 0; i < getInstance()->voiceCount ; i++) {
     getInstance()->voices[i]->setModulatorFrequency(modulatorFrequency);
   }
   
-  if(value > 50){
-    for (int i = 0; i < getInstance()->voiceCount ; i++) {
-      getInstance()->voices[i]->setModulatorAmplitude(modulatorAmplitude);
-    }
-  }else{
-    for (int i = 0; i < getInstance()->voiceCount ; i++) {
-      getInstance()->voices[i]->setModulatorAmplitude(0);
-    }
+  for (int i = 0; i < getInstance()->voiceCount ; i++) {
+    getInstance()->voices[i]->setModulatorAmplitude(modulatorAmplitude);
   }
 }
 #endif
