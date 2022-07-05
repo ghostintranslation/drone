@@ -24,19 +24,15 @@ https://github.com/ghostintranslation
 Drone * drone = Drone::getInstance();
 
 AudioOutputI2S i2s2;
-AudioOutputUSB usb;
-AudioConnection patchCord1(*drone->getOutputLeft(), 0, i2s2, 0);
-AudioConnection patchCord2(*drone->getOutputRight(), 0, i2s2, 1);
-AudioConnection patchCord3(*drone->getOutputLeft(), 0, usb, 0);
-AudioConnection patchCord4(*drone->getOutputRight(), 0, usb, 1);
+//AudioOutputUSB usb;
+//AudioConnection patchCord3(*drone->getOutputLeft(), 0, usb, 0);
+//AudioConnection patchCord4(*drone->getOutputRight(), 0, usb, 1);
 AudioControlSGTL5000 audioBoard;
 
 void setup() {
   Serial.begin(115200);
   
   while (!Serial && millis() < 2500); // wait for serial monitor
-  
-  drone->init();
 
   // Audio connections require memory to work.
   AudioMemory(40);
@@ -44,11 +40,16 @@ void setup() {
   audioBoard.enable();
   audioBoard.volume(0.4);
 
+  drone->init();
+  new AudioConnection(*drone->getOutputLeft(), 0, i2s2, 0);
+  new AudioConnection (*drone->getOutputRight(), 0, i2s2, 1);
+
   // Ready!
   Serial.println("Ready!");
 }
 
 void loop() {
+  
   // Drone update
   drone->update();
 }

@@ -3,7 +3,7 @@
 
 #include <Audio.h>
 
-#include "Motherboard.h"
+#include "Etc/Etc.h"
 #include "Voice.h"
 #include "LinearToSpiral.h"
 
@@ -16,9 +16,6 @@ class Drone{
     // Singleton
     static Drone *instance;
     Drone();
-
-    // Motherboard
-    Motherboard *device;
 
     // Inputs
     Input* tune1;
@@ -54,7 +51,7 @@ class Drone{
 
     // Inputs callbacks
     // static void onTuneChange(Input* input);
-    static void onMixChange(Input* input); // TODO: CREATE A SPIRAL CONVERTER TO ELIMINATE THIS CALLBACK
+//    static void onMixChange(Input* input); // TODO: CREATE A SPIRAL CONVERTER TO ELIMINATE THIS CALLBACK
     static void onFmChange(Input* input);
 
     // Audio output
@@ -70,6 +67,23 @@ Drone * Drone::instance = nullptr;
  */
 inline Drone::Drone(){  
 
+}
+
+/**
+ * Singleton instance
+ */
+inline Drone *Drone::getInstance()    {
+  if (!instance)
+     instance = new Drone;
+  return instance;
+}
+
+/**
+ * Init
+ */
+inline void Drone::init(){
+//Serial.println("init");
+
   this->tune1 = new Input(0);
 
   this->tune2 = new Input(1);
@@ -79,10 +93,11 @@ inline Drone::Drone(){
   this->tune4 = new Input(3);
 
   this->mix = new Input(4);
-  this->mix->setRange(0, 4*PI);
+//  this->mix->setOnChange(onMixChange);
   this->linearToSpiral = new LinearToSpiral();
   
   this->fm = new Input(5);
+  this->fm->setOnChange(onFmChange);
 
   this->led1 = new Led(0);
   this->led2 = new Led(1);
@@ -121,28 +136,14 @@ inline Drone::Drone(){
   new AudioConnection(*this->linearToSpiral, 1, *this->led2, 0);
   new AudioConnection(*this->linearToSpiral, 2, *this->led3, 0);
   new AudioConnection(*this->linearToSpiral, 3, *this->led4, 0);
-  new AudioConnection(*this->fm, 0, *this->linearToSpiral, 0);
+//  new AudioConnection(*this->fm, 0, *this->linearToSpiral, 0);
 
   // Set the pan programmatically
-  this->setPan(0, 50);
-  this->setPan(1, 100);
-  this->setPan(2, 150);
-  this->setPan(3, 200);
-}
-
-/**
- * Singleton instance
- */
-inline Drone *Drone::getInstance()    {
-  if (!instance)
-     instance = new Drone;
-  return instance;
-}
-
-/**
- * Init
- */
-inline void Drone::init(){
+//  this->setPan(0, 50);
+//  this->setPan(1, 100);
+//  this->setPan(2, 150);
+//  this->setPan(3, 200);
+  ETC::init();
 }
 
 
@@ -164,21 +165,29 @@ inline AudioMixer4 * Drone::getOutputRight(){
  * Update
  */
 inline void Drone::update(){
-  this->device->update();
+  ETC::update();
+//  Serial.println("update");
 }
 
 /**
  * Set one voice's pan
  */
-inline void Drone::setPan(byte voiceIndex, byte pan){
-  voiceIndex = voiceIndex % 4;
-  this->voices[voiceIndex]->setPan(pan);
-}
+//inline void Drone::setPan(byte voiceIndex, byte pan){
+//  voiceIndex = voiceIndex % 4;
+//  this->voices[voiceIndex]->setPan(pan);
+//}
 
+
+//inline void Drone::onMixChange(Input* input){
+//  Serial.print("onMixChange ");
+//  Serial.println(input->getValue());
+//}
 /**
  * On Fm Change
  */
 inline void Drone::onFmChange(Input* input){
+//  Serial.print("onFmChange ");
+//  Serial.println(input->getValue());
   int modulatorFrequency = 0;
   float modulatorAmplitude = 0;
     
@@ -195,11 +204,11 @@ inline void Drone::onFmChange(Input* input){
   }
     
   for (int i = 0; i < getInstance()->voiceCount ; i++) {
-    getInstance()->voices[i]->setModulatorFrequency(modulatorFrequency);
+    getInstance()->voices[i]->setModulatorFrequency(0);
   }
   
   for (int i = 0; i < getInstance()->voiceCount ; i++) {
-    getInstance()->voices[i]->setModulatorAmplitude(modulatorAmplitude);
+    getInstance()->voices[i]->setModulatorAmplitude(0);
   }
 }
 #endif
