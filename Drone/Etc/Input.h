@@ -97,7 +97,7 @@ inline void Input::update(void)
       // Raw output
       if (block)
       {
-        block->data[i] = inputBuffer[i];
+        block->data[i] = this->value; //inputBuffer[i];
       }
       // Trigger output
 

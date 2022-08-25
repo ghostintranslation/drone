@@ -20,7 +20,7 @@ protected:
   int16_t value = 0;
   int16_t prevValue = 0;
   int16_t target = 0;
-  uint16_t smoothing = 10;
+  uint16_t smoothing = 50;
 };
 
 inline IO::IO(uint8_t index, uint8_t numberOfInputsPorts, audio_block_t **iqueue) : AudioStream(numberOfInputsPorts, iqueue)

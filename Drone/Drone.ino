@@ -35,10 +35,10 @@ void setup() {
   while (!Serial && millis() < 2500); // wait for serial monitor
 
   // Audio connections require memory to work.
-  AudioMemory(40);
+  AudioMemory(50);
   
   audioBoard.enable();
-  audioBoard.volume(0.4);
+  audioBoard.volume(0.2);
 
   drone->init();
   new AudioConnection(*drone->getOutputLeft(), 0, i2s2, 0);
