@@ -64,6 +64,15 @@ inline Input::Input(byte index) : IO(index, 0, NULL)
   //  inputBuffer = new int16_t;
 }
 
+int16_t *block1 = NULL;
+int16_t *block2 = NULL;
+int16_t *block3 = NULL;
+int16_t *block4 = NULL;
+int16_t *block5 = NULL;
+int16_t *block6 = NULL;
+int16_t *block7 = NULL;
+int16_t *block8 = NULL;
+
 inline void Input::update(void)
 {
   IO::update();
@@ -85,6 +94,84 @@ inline void Input::update(void)
 
   //  int16_t* inputBuffer = InputsManager::getInstance()->getBuffers(this->index)->read();
   //
+
+  // ------
+  // if (this->index == 5)
+  // {
+  //   int16_t *block12 = InputsManager::getInstance()->readInput(0);
+  //   if (block12 != NULL)
+  //   {
+  //     block1 = block12;
+  //   }
+  //   int16_t *block22 = InputsManager::getInstance()->readInput(1);
+  //   if (block22 != NULL)
+  //   {
+  //     block2 = block22;
+  //   }
+  //   int16_t *block32 = InputsManager::getInstance()->readInput(2);
+  //   if (block32 != NULL)
+  //   {
+  //     block3 = block32;
+  //   }
+  //   int16_t *block42 = InputsManager::getInstance()->readInput(3);
+  //   if (block42 != NULL)
+  //   {
+  //     block4 = block42;
+  //   }
+  //   int16_t *block52 = InputsManager::getInstance()->readInput(4);
+  //   if (block52 != NULL)
+  //   {
+  //     block5 = block52;
+  //   }
+  //   int16_t *block62 = InputsManager::getInstance()->readInput(5);
+  //   if (block62 != NULL)
+  //   {
+  //     block6 = block62;
+  //   }
+  //   int16_t *block72 = InputsManager::getInstance()->readInput(6);
+  //   if (block72 != NULL)
+  //   {
+  //     block7 = block72;
+  //   }
+  //   int16_t *block82 = InputsManager::getInstance()->readInput(7);
+  //   if (block82 != NULL)
+  //   {
+  //     block8 = block82;
+  //   }
+
+  //   if (block1 != NULL && block2 != NULL && block3 != NULL && block4 != NULL && block5 != NULL && block6 != NULL && block7 != NULL && block8 != NULL)
+  //   {
+  //     for (unsigned int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
+  //     {
+  //       Serial.print(block1[i]);
+  //       Serial.print(",");
+  //       Serial.print(block2[i]);
+  //       Serial.print(",");
+  //       Serial.print(block3[i]);
+  //       Serial.print(",");
+  //       Serial.print(block4[i]);
+  //       Serial.print(",");
+  //       Serial.print(block5[i]);
+  //       Serial.print(",");
+  //       Serial.print(block6[i]);
+  //       Serial.print(",");
+  //       Serial.print(block7[i]);
+  //       Serial.print(",");
+  //       Serial.print(block8[i]);
+  //       Serial.println("");
+  //     }
+  //     block1 = NULL;
+  //     block2 = NULL;
+  //     block3 = NULL;
+  //     block4 = NULL;
+  //     block5 = NULL;
+  //     block6 = NULL;
+  //     block7 = NULL;
+  //     block8 = NULL;
+  //   }
+  // }
+  // ------
+
   int16_t *inputBuffer = InputsManager::getInstance()->readInput(this->index);
 
   if (inputBuffer != NULL)

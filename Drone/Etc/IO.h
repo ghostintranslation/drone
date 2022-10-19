@@ -17,9 +17,9 @@ public:
 
 protected:
   uint8_t index = 0;
-  int16_t value = 0;
-  int16_t prevValue = 0;
-  int16_t target = 0;
+  int16_t value = -32768;
+  int16_t prevValue = -32768;
+  int16_t target = -32768;
   uint16_t smoothing = 50;
 };
 

@@ -24,7 +24,7 @@ public:
   void update();
   static void dmaInterrupt();
   //    volatile audio_block* getData(byte index);
-  //    audio_buffer* getBuffers(byte index);
+  // audio_buffer *getBuffer(byte index);
   int16_t *readInput(byte index);
 
 private:
@@ -43,43 +43,87 @@ private:
   uint32_t count[inputsCount];
   //    volatile audio_block* readyData[inputsCount];
 
+  // typedef struct audio_buffer
+  // {
+  //   int16_t data[10][AUDIO_BLOCK_SAMPLES * 2];
+  //   bool isFree[10] = {true, true, true, true, true, true, true, true, true, true};
+  //   volatile uint8_t head, tail, headSamplesCount;
+
+  //   void write(int16_t data)
+  //   {
+  //     if (this->isFree[this->head])
+  //     {
+  //       this->data[this->head][this->headSamplesCount++] = data;
+
+  //       if (this->headSamplesCount >= AUDIO_BLOCK_SAMPLES)
+  //       {
+  //         // Block is complete with AUDIO_BLOCK_SAMPLES samples
+  //         this->isFree[this->head] = false;
+  //         this->head++;
+  //         this->head = this->head % 10;
+  //         this->headSamplesCount = 0;
+  //       }
+  //     }
+  //   }
+  //
+  // int16_t * read()
+  // {
+  //   if (!this->isFree[this->tail])
+  //   {
+  //     int16_t *block = this->data[this->tail];
+  //     this->isFree[this->tail] = true;
+  //     this->tail++;
+  //     this->tail = this->tail % 10;
+  //     return block;
+  //   }
+
+  //   return NULL;
+  // }
+
+  // } audio_buffer;
+
   typedef struct audio_buffer
   {
-    int16_t data[10][AUDIO_BLOCK_SAMPLES * 2];
-    bool isFree[10] = {true, true, true, true, true, true, true, true, true, true};
-    volatile uint8_t head, tail, headSamplesCount;
+    int16_t data[AUDIO_BLOCK_SAMPLES * 2];
+    uint16_t head;
+
+    audio_buffer()
+    {
+      for (int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
+      {
+        this->data[i] = 0;
+      }
+    }
 
     void write(int16_t data)
     {
-      if (this->isFree[this->head])
+      if (this->head < AUDIO_BLOCK_SAMPLES)
       {
-        this->data[this->head][this->headSamplesCount++] = data;
-
-        if (this->headSamplesCount >= AUDIO_BLOCK_SAMPLES)
-        {
-          // Block is complete with AUDIO_BLOCK_SAMPLES samples
-          this->isFree[this->head] = false;
-          this->head++;
-          this->head = this->head % 10;
-          this->headSamplesCount = 0;
-        }
+        this->data[this->head] = data;
+        this->head++;
       }
     }
 
     int16_t *read()
     {
-      if (!this->isFree[this->tail])
+      if (this->head >= AUDIO_BLOCK_SAMPLES - 1)
       {
-        int16_t *block = this->data[this->tail];
-        this->isFree[this->tail] = true;
-        this->tail++;
-        this->tail = this->tail % 10;
-        return block;
+        this->head = 0;
+        return this->data;
       }
-
-      return NULL;
+      else
+      {
+        for (int i = this->head; i < AUDIO_BLOCK_SAMPLES; i++)
+        {
+          this->data[i] = this->data[this->head];
+        }
+        // this->head = AUDIO_BLOCK_SAMPLES;
+        this->head = 0;
+        return this->data;
+        // Serial.println(this->head);
+      }
+      // return NULL;
     }
-
   } audio_buffer;
 
   audio_buffer *buffers[inputsCount];
@@ -169,7 +213,7 @@ inline void InputsManager::init()
 
   // configure a timer to trigger ADC
   // sample rate should be very close to 4X AUDIO_SAMPLE_RATE_EXACT
-  const int comp1 = ((float)F_BUS_ACTUAL) / (AUDIO_SAMPLE_RATE_EXACT * (float)(inputsCount - 1)) / 2.0f + 0.5f;
+  const int comp1 = ((float)F_BUS_ACTUAL) / (AUDIO_SAMPLE_RATE_EXACT * (float)(inputsCount)) / 2.0f + 0.5f;
   TMR4_ENBL &= ~(1 << 3);
   TMR4_SCTRL3 = TMR_SCTRL_OEN | TMR_SCTRL_FORCE;
   TMR4_CSCTRL3 = TMR_CSCTRL_CL1(1) | TMR_CSCTRL_TCF1EN;
@@ -290,19 +334,13 @@ inline void InputsManager::dmaInterrupt()
 
   // Switching to the next input
   getInstance()->iterate();
-
-  //   int16_t* block = getInstance()->buffers[2]->read();
-  //   if(block != NULL){
-  //     for(unsigned int i=0; i<AUDIO_BLOCK_SAMPLES; i++){
-  //       Serial.println(block[i]);
-  //     }
-  //   }
 }
 
-//inline audio_buffer* InputsManager::getBuffers(byte index){
-//  index = index % inputsCount;
-//  return this->buffers[index];
-//}
+// inline audio_buffer *InputsManager::getBuffer(byte index)
+// {
+//   index = index % inputsCount;
+//   return this->buffers[index];
+// }
 
 inline int16_t *InputsManager::readInput(byte index)
 {

@@ -1,32 +1,33 @@
 /*
- __    _  _____   ___      ___ _  _     __    _ ______ _    
-/__|_|/ \(_  |     | |\|    | |_)|_||\|(_ |  |_| |  | / \|\|
-\_|| |\_/__) |    _|_| |    | | \| || |__)|__| | | _|_\_/| |
-
+GHOST IN TRANSLATION
 DRONE
-v1.2.0
+v2.0.0
 
 Support my work:
+https://patreon.com/ghostintranslation
 https://www.paypal.com/paypalme/ghostintranslation
 
-https://www.ghostintranslation.com/
+Music and Merch:
 https://ghostintranslation.bandcamp.com/
+
+Social:
 https://www.instagram.com/ghostintranslation/
-https://www.youtube.com/channel/UCcyUTGTM-hGLIz4194Inxyw
+https://www.youtube.com/c/ghostintranslation
+
+Code:
 https://github.com/ghostintranslation
+
+My website:
+https://www.ghostintranslation.com/
 */
 
 #include <Audio.h>
-
 #include "Drone.h"
 
 // Instanciation of Drone
 Drone * drone = Drone::getInstance();
 
-AudioOutputI2S i2s2;
-//AudioOutputUSB usb;
-//AudioConnection patchCord3(*drone->getOutputLeft(), 0, usb, 0);
-//AudioConnection patchCord4(*drone->getOutputRight(), 0, usb, 1);
+AudioOutputI2S i2s;
 AudioControlSGTL5000 audioBoard;
 
 void setup() {
@@ -35,14 +36,14 @@ void setup() {
   while (!Serial && millis() < 2500); // wait for serial monitor
 
   // Audio connections require memory to work.
-  AudioMemory(50);
+  AudioMemory(40);
   
   audioBoard.enable();
   audioBoard.volume(0.2);
 
   drone->init();
-  new AudioConnection(*drone->getOutputLeft(), 0, i2s2, 0);
-  new AudioConnection (*drone->getOutputRight(), 0, i2s2, 1);
+  new AudioConnection(*drone->getOutputLeft(), 0, i2s, 0);
+  new AudioConnection (*drone->getOutputRight(), 0, i2s, 1);
 
   // Ready!
   Serial.println("Ready!");

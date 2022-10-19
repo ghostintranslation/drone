@@ -3,6 +3,9 @@
 
 #include <Audio.h>
 
+/**
+ * This object converts 1 input into 4 outputs following a spiral pattern
+ */
 class LinearToSpiral : public AudioStream{
   private:
     audio_block_t *inputQueueArray[1];
@@ -35,7 +38,7 @@ inline void LinearToSpiral::update(void) {
     outBlock4 = allocate();
 
     for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-        float x = map((float)block->data[i], ABSOLUTE_ANALOG_MIN, ABSOLUTE_ANALOG_MAX, 0, 4*PI);
+        float x = map((float)block->data[i], ABSOLUTE_ANALOG_MIN, ABSOLUTE_ANALOG_MAX, 0, 4.5*PI);
 
         if(outBlock1){
           float out1 = constrain(100 * cos(x) + pow(x,2), 0, 100) / 100;
@@ -43,20 +46,19 @@ inline void LinearToSpiral::update(void) {
         }
 
         if(outBlock2){
-          float out2 = constrain(100 * cos(x + 1.5 * PI) + pow(x,2), 0, 100) / 100;
+          float out2 = constrain(100 * cos(x + 1.25 * PI) + pow(x,2), 0, 100) / 100;
           outBlock2->data[i] = 65535 * out2 - 32768;
         }
 
         if(outBlock3){
-          float out3 = constrain(100 * cos(x + 0.5 * PI) + pow(x,2), 0, 100) / 100;
+          float out3 = constrain(100 * cos(x + 0.75 * PI) + pow(x,2), 0, 100) / 100;
           outBlock3->data[i] = 65535 * out3 - 32768;
         }
-
+        
         if(outBlock4){
-          float out4 = constrain(100 * cos(x + PI) + pow(x,2), 0, 100) / 100;
+          float out4 = constrain(100 * cos(x + 0.5 * PI) + pow(x,2), 0, 100) / 100;
           outBlock4->data[i] = 65535 * out4 - 32768;
         }
-        
     }
 
     if(outBlock1){

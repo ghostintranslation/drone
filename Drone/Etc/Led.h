@@ -6,58 +6,61 @@
 
 class LedManager;
 
-class Led: public IO, public Registrar<Led>
+class Led : public IO, public Registrar<Led>
 {
-  public:
-    enum Status
-    {
-      Off,
-      On,
-      Blink,
-      BlinkFast,
-      BlinkOnce
-    };
-    
-    Led(byte index);
-    void update(void) override;
-    void set(Led::Status status, int16_t brightness);
-    void setStatus(Led::Status status);
-    void setBrightness(int16_t brightness);
-    int16_t getBrightness();
+public:
+  enum Status
+  {
+    Off,
+    On,
+    Blink,
+    BlinkFast,
+    BlinkOnce
+  };
 
-  private:
-    audio_block_t *inputQueueArray[1];
-    uint16_t target = 0;
-    uint16_t value = 0;
-    int16_t brightness = ABSOLUTE_ANALOG_MAX;
+  Led(byte index);
+  void update(void) override;
+  void set(Led::Status status, int16_t brightness);
+  void setStatus(Led::Status status);
+  void setBrightness(int16_t brightness);
+  int16_t getBrightness();
 
-    Status status = Off;
+private:
+  audio_block_t *inputQueueArray[1];
+  uint16_t target = 0;
+  uint16_t value = 0;
+  int16_t brightness = ABSOLUTE_ANALOG_MIN;
 
-    // Time counter for the blinking
-    elapsedMillis blickClock;
+  Status status = Off;
 
+  // Time counter for the blinking
+  elapsedMillis blickClock;
 };
 
-inline Led::Led(byte index): IO(index, 1, inputQueueArray) {
+inline Led::Led(byte index) : IO(index, 1, inputQueueArray)
+{
 }
 
-inline void Led::update(void) {
+inline void Led::update(void)
+{
   IO::update();
 
   // Receive input data
   audio_block_t *block;
   block = receiveReadOnly(0);
-  
-  if (block){
-    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+
+  if (block)
+  {
+    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
+    {
       int16_t x = block->data[i];
-  
+
       // Aproximated moving average
       this->brightness -= this->brightness / AUDIO_BLOCK_SAMPLES;
       this->brightness += x / AUDIO_BLOCK_SAMPLES;
-//      this->brightness = x;
+      //      this->brightness = x;
     }
-  
+
     release(block);
   }
 
@@ -88,23 +91,27 @@ inline void Led::update(void) {
     if (this->blickClock > 100)
     {
       this->setTarget(INT16_MIN);
-    }else{
+    }
+    else
+    {
       this->setTarget(this->brightness);
     }
     break;
 
   default:
-      this->setTarget(this->brightness);
+    this->setTarget(this->brightness);
     break;
   }
 }
 
-inline void Led::set(Led::Status status, int16_t brightness) {
+inline void Led::set(Led::Status status, int16_t brightness)
+{
   this->setStatus(status);
   this->setBrightness(brightness);
 }
 
-inline void Led::setStatus(Led::Status status) {
+inline void Led::setStatus(Led::Status status)
+{
   this->status = status;
 
   switch (this->status)
@@ -120,11 +127,13 @@ inline void Led::setStatus(Led::Status status) {
   }
 }
 
-inline void Led::setBrightness(int16_t brightness) {
+inline void Led::setBrightness(int16_t brightness)
+{
   this->brightness = brightness;
 }
 
-inline int16_t Led::getBrightness() {
+inline int16_t Led::getBrightness()
+{
   return this->brightness;
 }
 #endif

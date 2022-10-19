@@ -8,7 +8,7 @@
 class AudioSmoothAmplifier : public AudioStream
 {
   public:
-    AudioSmoothAmplifier(void) : AudioStream(1, inputQueueArray), multiplierTarget(65536) {
+    AudioSmoothAmplifier(void) : AudioStream(2, inputQueueArray), multiplierTarget(65536) {
     }
     virtual void update(void);
     void gain(float n, float s) {
@@ -20,7 +20,7 @@ class AudioSmoothAmplifier : public AudioStream
   private:
     int32_t multiplierTarget;
     float multiplier = 0;
-    audio_block_t *inputQueueArray[1];
+    audio_block_t *inputQueueArray[2];
     float smoothness = 1;
     void applyGain(int16_t *data);
 };
@@ -65,7 +65,19 @@ inline void AudioSmoothAmplifier::applyGain(int16_t *data)
 
 inline void AudioSmoothAmplifier::update(void)
 {
-  audio_block_t *block;
+  audio_block_t *block, *gainBlock;
+
+  gainBlock = receiveReadOnly(1);
+  
+  if (gainBlock){
+    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+      // Aproximated moving average
+      this->multiplierTarget -= this->multiplierTarget / AUDIO_BLOCK_SAMPLES;
+      this->multiplierTarget += gainBlock->data[i] / AUDIO_BLOCK_SAMPLES;
+    }
+//    Serial.println(this->multiplierTarget);
+    release(gainBlock);
+  }
 
   if (multiplier == 0 && multiplierTarget == 0) {
     // zero gain, discard any input and transmit nothing
