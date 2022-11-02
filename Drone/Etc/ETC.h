@@ -14,27 +14,29 @@
 #include "Led.h"
 #include "LedManager.h"
 #include "InputsManager.h"
+#include "PrintSerial.h"
 
 class ETC
 {
-  public:
-    static ETC *getInstance();
-    static void init();
-    static void update();
+public:
+  static ETC *getInstance();
+  static void init();
+  static void update();
 
-  private:
-    // Singleton
-    static ETC *instance;
-    ETC();
+private:
+  // Singleton
+  static ETC *instance;
+  ETC();
 
-    elapsedMicros updateClock;
-    // IntervalTimer updateTimer;
+  elapsedMicros updateClock;
+  // IntervalTimer updateTimer;
 };
 
 // Singleton pre init
-ETC * ETC::instance = nullptr;
+ETC *ETC::instance = nullptr;
 
-inline ETC::ETC(){
+inline ETC::ETC()
+{
   // updateTimer.begin(ETC::update, 4000);
   // updateTimer.priority(255);
 }
@@ -42,14 +44,16 @@ inline ETC::ETC(){
 /**
  * Singleton instance
  */
-inline ETC *ETC::getInstance() {
+inline ETC *ETC::getInstance()
+{
   if (!instance)
-     instance = new ETC;
+    instance = new ETC;
   return instance;
 }
 
-inline void ETC::init(){
-//  Serial.println("init");
+inline void ETC::init()
+{
+  //  Serial.println("init");
   pinMode(REGISTERS_LATCH_PIN, OUTPUT);
   pinMode(SPI_CLOCK_PIN, OUTPUT);
   pinMode(SPI_MOSI_PIN, OUTPUT);
@@ -63,19 +67,21 @@ inline void ETC::init(){
   InputsManager::getInstance()->init();
 }
 
-inline void ETC::update(){
-//  Serial.println("update");
+inline void ETC::update()
+{
 
-  if(getInstance()->updateClock >= 22){
-    for(Input* input : Input::getAll()){
+  if (getInstance()->updateClock >= 22)
+  {
+    // Serial.println("ETC::update");
+    for (Input *input : Input::getAll())
+    {
       input->realTimeUpdate();
     }
     getInstance()->updateClock = 0;
   }
-  
+
   LedManager::getInstance()->update();
 }
-
 
 ETC &ETC = *ETC::getInstance();
 

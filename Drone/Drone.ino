@@ -46,7 +46,7 @@ void setup() {
   new AudioConnection (*drone->getOutputRight(), 0, i2s, 1);
 
   // Ready!
-  Serial.println("Ready!");
+//  Serial.println("Ready!");
 }
 
 void loop() {

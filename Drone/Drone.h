@@ -122,7 +122,14 @@ inline void Drone::init() {
   //new AudioConnection(*this->tune1, 0, *this->outputLeft, 1);;
   //new AudioConnection(*this->tune1, 0, *this->led1, 0);
 
-
+PrintSerial *printSerial = new PrintSerial();
+new AudioConnection(*this->tune1, 0, *printSerial, 0);
+new AudioConnection(*this->tune2, 0, *printSerial, 1);
+new AudioConnection(*this->tune3, 0, *printSerial, 2);
+new AudioConnection(*this->tune4, 0, *printSerial, 3);
+new AudioConnection(*this->mix, 0, *printSerial, 4);
+new AudioConnection(*this->fm, 0, *printSerial, 5);
+  
   for (int i = 0; i < this->voiceCount; i++) {
     this->voices[i] = new Voice();
     new AudioConnection(*this->voices[i], 0, *this->outputLeft, i);
