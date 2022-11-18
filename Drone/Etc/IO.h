@@ -55,9 +55,9 @@ inline void IO::update(void)
 /**
    The smoothing is non linear, it uses the difference between target and value.
    The bigger the difference the bigger the increments.
-   
+
    0 = no smoothing
-   
+
    For example, for a difference of 10000 between target and value, and with a
    smoothing of 1000, the first millisecond it will increment 10, the next will be 9.99,
    the next will be 9.98...

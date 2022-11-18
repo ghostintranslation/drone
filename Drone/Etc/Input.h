@@ -10,6 +10,8 @@ class Input;
 
 using InputCallback = void (*)(Input *input);
 
+elapsedMicros debugClock2;
+uint32_t debugCounter2 = 0;
 /**
    Physical input object
    0 inputs
@@ -103,7 +105,18 @@ int16_t *block8 = NULL;
 
 inline void Input::update(void)
 {
+  // if (debugCounter2 == 0)
+  // {
+  // if (this->index == 0)
+  // {
+  //   Serial.print("debugClock2: ");
+  //   Serial.println(debugClock2);
+  //   debugClock2 = 0;
+  // }
+  //   debugCounter2++;
+  // }
   // Serial.println("Input::update");
+
   IO::update();
 
   // Serial.println("Input::update 2");
@@ -401,7 +414,7 @@ inline void Input::setBuffer(int16_t *buffer)
 {
   for (unsigned int i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
   {
-    this->inputBuffer[i] = this->processLowPass(buffer[i]);
+    this->inputBuffer[i] = buffer[i]; // buffer[i]);
   }
 
   this->bufferIndex = 0;
