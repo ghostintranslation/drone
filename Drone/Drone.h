@@ -8,6 +8,12 @@
 #include "LinearToSpiral.h"
 #include "DC.h"
 
+  AudioRecordQueue queue1;
+  AudioRecordQueue queue2;
+  AudioRecordQueue queue3;
+  AudioRecordQueue queue4;
+  AudioRecordQueue queue5;
+  AudioRecordQueue queue6;
 /*
    Drone
 */
@@ -92,6 +98,25 @@ inline void Drone::init()
   this->tune4 = new Input(3);
   this->mix = new Input(4);
   this->fm = new Input(5);
+  
+//  queue1 = new AudioRecordQueue();
+//  queue2 = new AudioRecordQueue();
+//  queue3 = new AudioRecordQueue();
+//  queue4 = new AudioRecordQueue();
+//  queue5 = new AudioRecordQueue();
+//  queue6 = new AudioRecordQueue();
+  queue1.begin();
+  queue2.begin();
+  queue3.begin();
+  queue4.begin();
+  queue5.begin();
+  queue6.begin();
+  new AudioConnection(*this->tune1, 0, queue1, 0);
+  new AudioConnection(*this->tune2, 0, queue2, 0);
+  new AudioConnection(*this->tune3, 0, queue3, 0);
+  new AudioConnection(*this->tune4, 0, queue4, 0);
+  new AudioConnection(*this->mix, 0, queue5, 0);
+  new AudioConnection(*this->fm, 0, queue6, 0);
 
   this->led1 = new Led(0);
   this->led2 = new Led(1);
@@ -125,8 +150,8 @@ inline void Drone::init()
   // new AudioConnection(*this->tune1, 0, *this->outputLeft, 1);;
   // new AudioConnection(*this->tune1, 0, *this->led1, 0);
 
-  PrintSerial *printSerial = new PrintSerial();
-  new AudioConnection(*this->tune1, 0, *printSerial, 0);
+  // PrintSerial *printSerial = new PrintSerial();
+  // new AudioConnection(*this->tune1, 0, *printSerial, 0);
   // new AudioConnection(*this->tune2, 0, *printSerial, 1);
   // new AudioConnection(*this->tune3, 0, *printSerial, 2);
   // new AudioConnection(*this->tune4, 0, *printSerial, 3);
@@ -188,7 +213,35 @@ inline AudioMixer4 *Drone::getOutputRight()
 inline void Drone::update()
 {
   ETC::update();
-  //  Serial.println("update");
+//    Serial.println("update");
+
+  while (queue1.available() > 0
+         && queue2.available() > 0
+         && queue3.available() > 0
+         && queue4.available() > 0
+         && queue5.available() > 0
+         && queue6.available() > 0) {
+          
+      int16_t *buffer1 = queue1.readBuffer();
+      int16_t *buffer2 = queue2.readBuffer();
+      int16_t *buffer3 = queue3.readBuffer();
+      int16_t *buffer4 = queue4.readBuffer();
+      int16_t *buffer5 = queue5.readBuffer();
+      int16_t *buffer6 = queue6.readBuffer();
+      
+      for(int i=0; i<128; i++){
+        Serial.printf("%d,%d,%d,%d,%d,%d",buffer1[i], buffer2[i], buffer3[i], buffer4[i], buffer5[i], buffer6[i]); 
+//        Serial.printf("%d",buffer1[i]); 
+        Serial.println("");
+      }
+      
+      queue1.freeBuffer();
+      queue2.freeBuffer();
+      queue3.freeBuffer();
+      queue4.freeBuffer();
+      queue5.freeBuffer();
+      queue6.freeBuffer();
+    }
 }
 
 /**

@@ -36,7 +36,7 @@ void setup() {
   while (!Serial && millis() < 2500); // wait for serial monitor
 
   // Audio connections require memory to work.
-  AudioMemory(40);
+  AudioMemory(60);
   
   audioBoard.enable();
   audioBoard.volume(0.2);
