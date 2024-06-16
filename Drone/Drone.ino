@@ -5,6 +5,7 @@ v2.0.0
 
 Support my work:
 https://patreon.com/ghostintranslation
+https://www.buymeacoffee.com/ghostintranslation
 https://www.paypal.com/paypalme/ghostintranslation
 
 Music and Merch:
@@ -12,7 +13,7 @@ https://ghostintranslation.bandcamp.com/
 
 Social:
 https://www.instagram.com/ghostintranslation/
-https://www.youtube.com/c/ghostintranslation
+https://www.youtube.com/ghostintranslation
 
 Code:
 https://github.com/ghostintranslation
@@ -25,32 +26,25 @@ https://www.ghostintranslation.com/
 #include "Drone.h"
 
 // Instanciation of Drone
-Drone * drone = Drone::getInstance();
+Drone *drone = Drone::getInstance();
 
 AudioOutputI2S i2s;
-AudioControlSGTL5000 audioBoard;
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
-  
-  while (!Serial && millis() < 2500); // wait for serial monitor
+
+  while (!Serial && millis() < 2500)
+    ; // wait for serial monitor
 
   // Audio connections require memory to work.
-  AudioMemory(60);
-  
-  audioBoard.enable();
-  audioBoard.volume(0.2);
+  AudioMemory(500);
 
   drone->init();
-  new AudioConnection(*drone->getOutputLeft(), 0, i2s, 0);
-  new AudioConnection (*drone->getOutputRight(), 0, i2s, 1);
-
-  // Ready!
-//  Serial.println("Ready!");
+  new AudioConnection(*drone->getOutput(), 0, i2s, 0);
+  new AudioConnection(*drone->getOutput(), 0, i2s, 1);
 }
 
-void loop() {
-  
-  // Drone update
-  drone->update();
+void loop()
+{
 }

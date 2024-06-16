@@ -2,153 +2,259 @@
 #define Voice_h
 
 #include <Audio.h>
-#include "AudioSmoothAmplifier.h"
+#include "Motherboard/Vca.h"
+#include "Motherboard/Vcc.h"
 
 /*
  * Voice
  */
-class Voice : public AudioStream {
-  private:
-    audio_block_t *inputQueueArray[3];
+class Voice : public AudioStream
+{
+private:
+  audio_block_t *inputQueueArray[5];
 
-    AudioSynthWaveformModulated *sineFM;
-    AudioSmoothAmplifier *amplifier;
-    AudioSynthWaveformModulated *sineModulator;
-    AudioRecordQueue *audioOutQueue;
-    AudioPlayQueue *frequencyQueue;
-    AudioPlayQueue *gainQueue;
-    AudioPlayQueue *sineModulatorFrequencyQueue;
-    AudioPlayQueue *sineModulatorAmplitudeQueue;
-    AudioMixer4 *fmMixer;
-    AudioEffectMultiply *sineModulatorMultiplier;
+  // TODO: Add sawtooth and square?
+  AudioSynthWaveformModulated *sine;
 
-    int16_t frequencyData[AUDIO_BLOCK_SAMPLES];
-    int16_t gainData[AUDIO_BLOCK_SAMPLES];
-    int16_t sineModulatorFrequencyData[AUDIO_BLOCK_SAMPLES];
-    int16_t sineModulatorAmplitudeData[AUDIO_BLOCK_SAMPLES];
-    
-  public:
-    Voice();
-    void update(void);
+  AudioSynthNoisePink *noise;        // xy=174,124
+  AudioFilterStateVariable *filter1; // xy=366,135
+  AudioFilterStateVariable *filter2; // xy=366,135
+  AudioFilterStateVariable *filter3; // xy=366,135
+  AudioFilterStateVariable *filter4; // xy=366,135
+  AudioFilterStateVariable *filter5; // xy=366,135
+  AudioFilterStateVariable *filter6; // xy=366,135
+  float noiseFilterResonance = 1;
+
+  Vcc *shapeCrossfader;
+
+  AudioRecordQueue *audioOutQueue1;
+  AudioPlayQueue *filtersFrequencyQueue;
+  AudioPlayQueue *sineFrequencyQueue;
+  AudioPlayQueue *gainQueue;
+  AudioPlayQueue *shapeCrossfaderQueue;
+  Vca *vca1;
+
+  int16_t frequencyData[AUDIO_BLOCK_SAMPLES] = {0};
+  int16_t sineFrequencyData[AUDIO_BLOCK_SAMPLES] = {0};
+  int16_t filtersFrequencyData[AUDIO_BLOCK_SAMPLES] = {0};
+  int16_t gainData[AUDIO_BLOCK_SAMPLES] = {0};
+  int16_t shapeCrossfaderData[AUDIO_BLOCK_SAMPLES] = {0};
+
+  int16_t fmRange = INT16_MAX;
+
+  float frequencyCenter = 220.0;
+  float vOct = 0;
+  float frequency = frequencyCenter;
+
+public:
+  Voice();
+  void update(void);
 };
 
 /**
  * Constructor
  */
-inline Voice::Voice() : AudioStream(3, inputQueueArray){
-  this->sineFM = new AudioSynthWaveformModulated();
-  this->sineFM->begin(WAVEFORM_SINE);
-  this->sineFM->frequencyModulation(12);
-  this->sineFM->frequency(0.3);
-  this->sineFM->amplitude(1);
+inline Voice::Voice()
+    : AudioStream(5, inputQueueArray)
+{
+  // Sine and Triangle sources
+  this->sine = new AudioSynthWaveformModulated();
+  this->sine->begin(WAVEFORM_SINE);
+  this->sine->frequencyModulation(1);
+  this->sine->frequency(this->frequency);
+  this->sine->amplitude(1);
 
-  this->amplifier = new AudioSmoothAmplifier();
-  
-  this->sineModulator = new AudioSynthWaveformModulated();
-  this->sineModulator->begin(WAVEFORM_SINE);
-  this->sineModulator->frequencyModulation(12);
-  this->sineModulator->frequency(100);
-  this->sineModulator->amplitude(1);
+  this->shapeCrossfader = new Vcc();
 
-  this->sineModulatorMultiplier = new AudioEffectMultiply();
+  // Noise source
+  this->noise = new AudioSynthNoisePink();
+  this->noise->amplitude(0.05);
 
-  this->audioOutQueue = new AudioRecordQueue();
-  this->audioOutQueue->begin();
-  
-  this->frequencyQueue = new AudioPlayQueue();
-  
+  this->filter1 = new AudioFilterStateVariable();
+  this->filter1->frequency(this->frequency);
+  this->filter1->resonance(7);
+  this->filter1->octaveControl(1);
+
+  this->filter2 = new AudioFilterStateVariable();
+  this->filter2->frequency(this->frequency);
+  this->filter2->resonance(7);
+  this->filter2->octaveControl(1);
+
+  this->filter3 = new AudioFilterStateVariable();
+  this->filter3->frequency(this->frequency);
+  this->filter3->resonance(7);
+  this->filter3->octaveControl(1);
+
+  this->filter4 = new AudioFilterStateVariable();
+  this->filter4->frequency(this->frequency);
+  this->filter4->resonance(7);
+  this->filter4->octaveControl(1);
+
+  this->filter5 = new AudioFilterStateVariable();
+  this->filter5->frequency(this->frequency);
+  this->filter5->resonance(7);
+  this->filter5->octaveControl(1);
+
+  this->filter6 = new AudioFilterStateVariable();
+  this->filter6->frequency(this->frequency);
+  this->filter6->resonance(7);
+  this->filter6->octaveControl(1);
+
+  this->audioOutQueue1 = new AudioRecordQueue();
+  this->audioOutQueue1->begin();
+
+  this->filtersFrequencyQueue = new AudioPlayQueue();
+
+  this->sineFrequencyQueue = new AudioPlayQueue();
+
   this->gainQueue = new AudioPlayQueue();
-  
-  this->sineModulatorFrequencyQueue = new AudioPlayQueue();
 
-  this->sineModulatorAmplitudeQueue = new AudioPlayQueue();
+  this->shapeCrossfaderQueue = new AudioPlayQueue();
 
-  this->fmMixer = new AudioMixer4();
-  this->fmMixer->gain(0, 1);
-  this->fmMixer->gain(1, 1);
+  this->vca1 = new Vca();
+  // this->vca2 = new Vca();
 
-  new AudioConnection(*this->sineModulatorFrequencyQueue, 0, *this->sineModulator, 0);
-  new AudioConnection(*this->sineModulator, 0, *this->sineModulatorMultiplier, 0);
-  new AudioConnection(*this->sineModulatorAmplitudeQueue, 0, *this->sineModulatorMultiplier, 1);
-  new AudioConnection(*this->sineModulatorMultiplier, 0, *this->fmMixer, 0);
-  new AudioConnection(*this->frequencyQueue, 0, *this->fmMixer, 1);
-  new AudioConnection(*this->fmMixer, *this->sineFM);
-  new AudioConnection(*this->sineFM, *this->amplifier);
-  new AudioConnection(*this->gainQueue, 0, *this->amplifier, 1);
-  new AudioConnection(*this->amplifier, *this->audioOutQueue);
+  // Audio output 1
+  new AudioConnection(*this->sineFrequencyQueue, 0, *this->sine, 0);
+  new AudioConnection(*this->sine, 0, *this->shapeCrossfader, 0);
+  new AudioConnection(*this->shapeCrossfaderQueue, 0, *this->shapeCrossfader, 2);
+  new AudioConnection(*this->shapeCrossfader, 0, *this->vca1, 0);
+  new AudioConnection(*this->gainQueue, 0, *this->vca1, 1);
+  new AudioConnection(*this->vca1, 0, *this->audioOutQueue1, 0);
+
+  // Audio output 2
+  new AudioConnection(*this->noise, 0, *this->filter1, 0);
+  new AudioConnection(*this->sineFrequencyQueue, 0, *this->filter1, 1);
+  new AudioConnection(*this->filter1, 0, *this->filter2, 0);
+  new AudioConnection(*this->sineFrequencyQueue, 0, *this->filter2, 1);
+  new AudioConnection(*this->filter2, 0, *this->filter3, 0);
+  new AudioConnection(*this->sineFrequencyQueue, 0, *this->filter3, 1);
+  new AudioConnection(*this->filter3, 0, *this->filter4, 0);
+  new AudioConnection(*this->sineFrequencyQueue, 0, *this->filter4, 1);
+  new AudioConnection(*this->filter4, 0, *this->filter5, 0);
+  new AudioConnection(*this->sineFrequencyQueue, 0, *this->filter5, 1);
+  new AudioConnection(*this->filter5, 0, *this->filter6, 0);
+  new AudioConnection(*this->sineFrequencyQueue, 0, *this->filter6, 1);
+  new AudioConnection(*this->filter6, 0, *this->shapeCrossfader, 1);
 }
 
-inline void Voice::update(void) {
+inline void Voice::update(void)
+{
   // Receive input data
   audio_block_t *freqBlock;
-  audio_block_t *gainBlock;
   audio_block_t *fmBlock;
+  audio_block_t *gainBlock;
+  audio_block_t *shapeBlock;
+  audio_block_t *fmRangeBlock;
 
   // Frequency block
   // Receiving data from input of the block, and passing it to the queue which is connected to the other objects
   freqBlock = receiveReadOnly(0);
-  
-  if (freqBlock){
-    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-      int32_t val = freqBlock->data[i] + 32668; // between 0 and 65335
-      if(val<1) val = 1; // between 1 and 65335
-      val = log(val)*65335/11.5 - 32668;
-      if(val>32667) val = 32667;
-       this->frequencyData[i] = val;
-      }
-//      Serial.println(this->frequencyData[0]);
 
+  if (freqBlock)
+  {
+    this->frequencyCenter = 55 + (float)(freqBlock->data[0] + 32668) / 65335.0 * (880 - 55);
     release(freqBlock);
   }
-  
-  this->frequencyQueue->play(this->frequencyData, AUDIO_BLOCK_SAMPLES);
+
+  // FM block
+  // Receiving data from input of the block, and passing it to the queue which is connected to the other objects
+  fmBlock = receiveReadOnly(1);
+
+  if (fmBlock)
+  {
+    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
+    {
+    }
+    this->vOct = (float)(fmBlock->data[0] + 32668) / 65335.0;
+
+    release(fmBlock);
+  }
+
+  // Setting the frequency
+  this->frequency = this->frequencyCenter * pow(2, this->vOct * 5);
+  this->sine->frequency(this->frequency);
+  this->filter1->frequency(this->frequency);
+  this->filter2->frequency(this->frequency);
+  this->filter3->frequency(this->frequency);
+  this->filter4->frequency(this->frequency);
+  this->filter5->frequency(this->frequency);
+  this->filter6->frequency(this->frequency);
 
   // Gain block
   // Receiving data from input of the block, and passing it to the queue which is connected to the other objects
-  gainBlock = receiveReadOnly(1);
-  
-  if (gainBlock){
-    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-     this->gainData[i] = (gainBlock->data[i] + 32768) / 2; // Negative values reverse the signal, we don't want that.
+  gainBlock = receiveReadOnly(2);
+
+  if (gainBlock)
+  {
+    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
+    {
+      this->gainData[i] = gainBlock->data[i];
     }
 
     release(gainBlock);
   }
-  
+
   this->gainQueue->play(this->gainData, AUDIO_BLOCK_SAMPLES);
 
-  // FM block
-  // Receiving data from input of the block, and passing it to the queue which is connected to the other objects
-  fmBlock = receiveReadOnly(2);
-  
-  if (fmBlock){
-    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-     this->sineModulatorFrequencyData[i] = fmBlock->data[i];
-    }
-    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-      this->sineModulatorAmplitudeData[i] = (fmBlock->data[i] + 32768) / 2 - 1000; // Negative values reverse the signal, we don't want that.
-      this->sineModulatorAmplitudeData[i] = this->sineModulatorAmplitudeData[i] > 0 ? this->sineModulatorAmplitudeData[i] : 0;
-    }
-    release(fmBlock);
-  }
-  
-  this->sineModulatorFrequencyQueue->play(this->sineModulatorFrequencyData, AUDIO_BLOCK_SAMPLES);
-  this->sineModulatorAmplitudeQueue->play(this->sineModulatorAmplitudeData, AUDIO_BLOCK_SAMPLES);
+  // Shape block
+  shapeBlock = receiveReadOnly(3);
 
-  // Transmitting the audio queue
-  if(this->audioOutQueue->available()){
-    while(this->audioOutQueue->available()){ 
+  if (shapeBlock)
+  {
+    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
+    {
+      this->shapeCrossfaderData[i] = shapeBlock->data[i];
+      float newVal = (((float)shapeBlock->data[i] + (float)32668) / (float)65335) * 7;
+      noiseFilterResonance = noiseFilterResonance * (float)0.5 + newVal * (float)0.5;
+    }
+    this->filter1->resonance(noiseFilterResonance);
+    this->filter2->resonance(noiseFilterResonance);
+    this->filter3->resonance(noiseFilterResonance);
+    this->filter4->resonance(noiseFilterResonance);
+    this->filter5->resonance(noiseFilterResonance);
+    this->filter6->resonance(noiseFilterResonance);
+
+    // Volume needs to go way down when resonance goes up
+    this->noise->amplitude(0.0009); // vol
+    release(shapeBlock);
+  }
+
+  this->shapeCrossfaderQueue->play(this->shapeCrossfaderData, AUDIO_BLOCK_SAMPLES);
+
+  // Transmitting the audio queue 1
+  if (this->audioOutQueue1->available())
+  {
+    while (this->audioOutQueue1->available())
+    {
       audio_block_t *audioBlock = allocate();
-      if(audioBlock){
-        int16_t *queueData = this->audioOutQueue->readBuffer();
-        for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-         audioBlock->data[i] = queueData[i];
+      if (audioBlock)
+      {
+        int16_t *queueData = this->audioOutQueue1->readBuffer();
+        for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
+        {
+          audioBlock->data[i] = queueData[i];
         }
         transmit(audioBlock, 0);
         release(audioBlock);
-        this->audioOutQueue->freeBuffer();
+        this->audioOutQueue1->freeBuffer();
       }
     }
   }
+
+  // FM range block
+  fmRangeBlock = receiveReadOnly(4);
+  if (fmRangeBlock)
+  {
+    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
+    {
+      this->sineFrequencyData[i] = fmRangeBlock->data[i];
+    }
+
+    release(fmRangeBlock);
+  }
+
+  this->sineFrequencyQueue->play(this->sineFrequencyData, AUDIO_BLOCK_SAMPLES);
 }
+
 #endif

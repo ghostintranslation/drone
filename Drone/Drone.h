@@ -3,17 +3,12 @@
 
 #include <Audio.h>
 
-#include "Etc/Etc.h"
+#include "Motherboard/Input.h"
+#include "Motherboard/OutputLed.h"
 #include "Voice.h"
 #include "LinearToSpiral.h"
-#include "DC.h"
+#include "Combine.h"
 
-  AudioRecordQueue queue1;
-  AudioRecordQueue queue2;
-  AudioRecordQueue queue3;
-  AudioRecordQueue queue4;
-  AudioRecordQueue queue5;
-  AudioRecordQueue queue6;
 /*
    Drone
 */
@@ -31,13 +26,27 @@ private:
   Input *tune3;
   Input *tune4;
   Input *mix;
-  Input *fm;
+  Input *shape;
+  Input *voct1;
+  Input *voct2;
+  Input *voct3;
+  Input *voct4;
+  Input *mixMod;
+  Input *shapeMod;
+  Input *fmRange;
 
   // Leds
-  Led *led1;
-  Led *led2;
-  Led *led3;
-  Led *led4;
+  OutputLed *led1;
+  OutputLed *led2;
+  OutputLed *led3;
+  OutputLed *led4;
+  OutputLed *led5;
+  OutputLed *led6;
+  OutputLed *led7;
+  OutputLed *led8;
+  OutputLed *led9;
+  OutputLed *led10;
+  OutputLed *led11;
 
   // Linear to Spiral converter
   LinearToSpiral *linearToSpiral;
@@ -45,26 +54,17 @@ private:
   static const byte voiceCount = 4;
   Voice *voices[voiceCount];
 
-  byte updateMillis = 10;
-  elapsedMillis clockUpdate;
+  Combine *mixCombine;
+  Combine *shapeCombine;
 
-  AudioMixer4 *outputLeft;
-  AudioMixer4 *outputRight;
+  AudioMixer4 *output;
 
 public:
   static Drone *getInstance();
   void init();
-  void update();
-  void setPan(byte voiceIndex, byte pan);
-
-  // Inputs callbacks
-  //     static void onTuneChange(Input* input);
-  //    static void onMixChange(Input* input); // TODO: CREATE A SPIRAL CONVERTER TO ELIMINATE THIS CALLBACK
-  static void onFmChange(Input *input);
 
   // Audio output
-  AudioMixer4 *getOutputLeft();
-  AudioMixer4 *getOutputRight();
+  AudioMixer4 *getOutput();
 };
 
 // Singleton pre init
@@ -97,159 +97,88 @@ inline void Drone::init()
   this->tune3 = new Input(2);
   this->tune4 = new Input(3);
   this->mix = new Input(4);
-  this->fm = new Input(5);
-  
-//  queue1 = new AudioRecordQueue();
-//  queue2 = new AudioRecordQueue();
-//  queue3 = new AudioRecordQueue();
-//  queue4 = new AudioRecordQueue();
-//  queue5 = new AudioRecordQueue();
-//  queue6 = new AudioRecordQueue();
-  queue1.begin();
-  queue2.begin();
-  queue3.begin();
-  queue4.begin();
-  queue5.begin();
-  queue6.begin();
-  new AudioConnection(*this->tune1, 0, queue1, 0);
-  new AudioConnection(*this->tune2, 0, queue2, 0);
-  new AudioConnection(*this->tune3, 0, queue3, 0);
-  new AudioConnection(*this->tune4, 0, queue4, 0);
-  new AudioConnection(*this->mix, 0, queue5, 0);
-  new AudioConnection(*this->fm, 0, queue6, 0);
+  // this->mix->setLowPassCoeff(0.0001);
+  this->shape = new Input(5);
+  this->voct1 = new Input(6);
+  this->voct2 = new Input(7);
+  this->voct3 = new Input(8);
+  this->voct4 = new Input(9);
+  this->mixMod = new Input(10);
+  this->shapeMod = new Input(11);
+  this->fmRange = new Input(12);
 
-  this->led1 = new Led(0);
-  this->led2 = new Led(1);
-  this->led3 = new Led(2);
-  this->led4 = new Led(3);
+  this->led1 = new OutputLed(0);
+  this->led2 = new OutputLed(1);
+  this->led3 = new OutputLed(2);
+  this->led4 = new OutputLed(3);
+  this->led5 = new OutputLed(4);
+  this->led6 = new OutputLed(5);
+  this->led7 = new OutputLed(6);
+  this->led8 = new OutputLed(7);
+  this->led9 = new OutputLed(8);
+  this->led10 = new OutputLed(9);
+  this->led11 = new OutputLed(10);
 
   this->linearToSpiral = new LinearToSpiral();
 
-  this->outputLeft = new AudioMixer4();
-  this->outputLeft->gain(0, 1);
-  this->outputLeft->gain(1, 1);
-  this->outputLeft->gain(2, 1);
-  this->outputLeft->gain(3, 1);
+  this->mixCombine = new Combine();
+  this->shapeCombine = new Combine();
 
-  this->outputRight = new AudioMixer4();
-  this->outputRight->gain(0, 1);
-  this->outputRight->gain(1, 1);
-  this->outputRight->gain(2, 1);
-  this->outputRight->gain(3, 1);
-
-  //  AudioSynthWaveformDc *dc = new AudioSynthWaveformDc();
-  //  AudioEffectMultiply *sineModulatorMultiplier = new AudioEffectMultiply();
-  //  dc->amplitude(1);
-  //  new AudioConnection(*dc, 0, *sineModulatorMultiplier, 0);
-  //  new AudioConnection(*this->tune1, 0, *sineModulatorMultiplier, 1);
-  //  new AudioConnection(*sineModulatorMultiplier, 0, *this->outputLeft, 0);
-
-  // DC *dc = new DC();
-  // new AudioConnection(*dc, 0, *this->outputLeft, 0);
-
-  // new AudioConnection(*this->tune1, 0, *this->outputLeft, 1);;
-  // new AudioConnection(*this->tune1, 0, *this->led1, 0);
-
-  // PrintSerial *printSerial = new PrintSerial();
-  // new AudioConnection(*this->tune1, 0, *printSerial, 0);
-  // new AudioConnection(*this->tune2, 0, *printSerial, 1);
-  // new AudioConnection(*this->tune3, 0, *printSerial, 2);
-  // new AudioConnection(*this->tune4, 0, *printSerial, 3);
-  // new AudioConnection(*this->mix, 0, *printSerial, 4);
-  // new AudioConnection(*this->fm, 0, *printSerial, 5);
+  this->output = new AudioMixer4();
+  this->output->gain(0, 0.1); // 0.012, 0.25
+  this->output->gain(1, 0.1);
+  this->output->gain(2, 0.1);
+  this->output->gain(3, 0.1);
 
   for (int i = 0; i < this->voiceCount; i++)
   {
     this->voices[i] = new Voice();
-    new AudioConnection(*this->voices[i], 0, *this->outputLeft, i);
-    new AudioConnection(*this->voices[i], 0, *this->outputRight, i);
+    new AudioConnection(*this->voices[i], 0, *this->output, i);
   }
 
   new AudioConnection(*this->tune1, 0, *this->voices[0], 0);
   new AudioConnection(*this->tune2, 0, *this->voices[1], 0);
   new AudioConnection(*this->tune3, 0, *this->voices[2], 0);
   new AudioConnection(*this->tune4, 0, *this->voices[3], 0);
-  new AudioConnection(*this->mix, 0, *this->linearToSpiral, 0);
-  new AudioConnection(*this->linearToSpiral, 0, *this->voices[0], 1);
-  new AudioConnection(*this->linearToSpiral, 1, *this->voices[1], 1);
-  new AudioConnection(*this->linearToSpiral, 2, *this->voices[3], 1);
-  new AudioConnection(*this->linearToSpiral, 3, *this->voices[2], 1);
+  new AudioConnection(*this->voct1, 0, *this->voices[0], 1);
+  new AudioConnection(*this->voct2, 0, *this->voices[1], 1);
+  new AudioConnection(*this->voct3, 0, *this->voices[2], 1);
+  new AudioConnection(*this->voct4, 0, *this->voices[3], 1);
+  new AudioConnection(*this->mix, 0, *this->mixCombine, 0);
+  new AudioConnection(*this->mixMod, 0, *this->mixCombine, 1);
+  new AudioConnection(*this->mixCombine, 0, *this->linearToSpiral, 0);
+  new AudioConnection(*this->linearToSpiral, 0, *this->voices[0], 2);
+  new AudioConnection(*this->linearToSpiral, 1, *this->voices[1], 2);
+  new AudioConnection(*this->linearToSpiral, 2, *this->voices[3], 2);
+  new AudioConnection(*this->linearToSpiral, 3, *this->voices[2], 2);
   new AudioConnection(*this->linearToSpiral, 0, *this->led1, 0);
   new AudioConnection(*this->linearToSpiral, 1, *this->led2, 0);
   new AudioConnection(*this->linearToSpiral, 2, *this->led4, 0);
   new AudioConnection(*this->linearToSpiral, 3, *this->led3, 0);
-  new AudioConnection(*this->fm, 0, *this->voices[0], 2);
-  new AudioConnection(*this->fm, 0, *this->voices[1], 2);
-  new AudioConnection(*this->fm, 0, *this->voices[2], 2);
-  new AudioConnection(*this->fm, 0, *this->voices[3], 2);
-
-  // Set the pan programmatically
-  //  this->setPan(0, 50);
-  //  this->setPan(1, 100);
-  //  this->setPan(2, 150);
-  //  this->setPan(3, 200);
-  ETC::init();
+  new AudioConnection(*this->shape, 0, *this->shapeCombine, 0);
+  new AudioConnection(*this->shapeMod, 0, *this->shapeCombine, 1);
+  new AudioConnection(*this->shapeCombine, 0, *this->voices[0], 3);
+  new AudioConnection(*this->shapeCombine, 0, *this->voices[1], 3);
+  new AudioConnection(*this->shapeCombine, 0, *this->voices[2], 3);
+  new AudioConnection(*this->shapeCombine, 0, *this->voices[3], 3);
+  new AudioConnection(*this->voct1, 0, *this->led5, 0);
+  new AudioConnection(*this->voct2, 0, *this->led6, 0);
+  new AudioConnection(*this->voct3, 0, *this->led7, 0);
+  new AudioConnection(*this->voct4, 0, *this->led8, 0);
+  new AudioConnection(*this->mixMod, 0, *this->led9, 0);
+  new AudioConnection(*this->shapeMod, 0, *this->led10, 0);
+  new AudioConnection(*this->fmRange, 0, *this->led11, 0);
+  new AudioConnection(*this->fmRange, 0, *this->voices[0], 4);
+  new AudioConnection(*this->fmRange, 0, *this->voices[1], 4);
+  new AudioConnection(*this->fmRange, 0, *this->voices[3], 4);
+  new AudioConnection(*this->fmRange, 0, *this->voices[2], 4);
 }
 
 /**
    Return the audio left output
 */
-inline AudioMixer4 *Drone::getOutputLeft()
+inline AudioMixer4 *Drone::getOutput()
 {
-  return this->outputLeft;
+  return this->output;
 }
-
-/**
-   Return the audio right output
-*/
-inline AudioMixer4 *Drone::getOutputRight()
-{
-  return this->outputRight;
-}
-
-/**
-   Update
-*/
-inline void Drone::update()
-{
-  ETC::update();
-//    Serial.println("update");
-
-  while (queue1.available() > 0
-         && queue2.available() > 0
-         && queue3.available() > 0
-         && queue4.available() > 0
-         && queue5.available() > 0
-         && queue6.available() > 0) {
-          
-      int16_t *buffer1 = queue1.readBuffer();
-      int16_t *buffer2 = queue2.readBuffer();
-      int16_t *buffer3 = queue3.readBuffer();
-      int16_t *buffer4 = queue4.readBuffer();
-      int16_t *buffer5 = queue5.readBuffer();
-      int16_t *buffer6 = queue6.readBuffer();
-      
-      for(int i=0; i<128; i++){
-        Serial.printf("%d,%d,%d,%d,%d,%d",buffer1[i], buffer2[i], buffer3[i], buffer4[i], buffer5[i], buffer6[i]); 
-//        Serial.printf("%d",buffer1[i]); 
-        Serial.println("");
-      }
-      
-      queue1.freeBuffer();
-      queue2.freeBuffer();
-      queue3.freeBuffer();
-      queue4.freeBuffer();
-      queue5.freeBuffer();
-      queue6.freeBuffer();
-    }
-}
-
-/**
-   Set one voice's pan
-*/
-// inline void Drone::setPan(byte voiceIndex, byte pan){
-//   voiceIndex = voiceIndex % 4;
-//   this->voices[voiceIndex]->setPan(pan);
-// }
-
 #endif

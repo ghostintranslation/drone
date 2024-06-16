@@ -38,7 +38,7 @@ inline void LinearToSpiral::update(void) {
     outBlock4 = allocate();
 
     for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-        float x = map((float)block->data[i], ABSOLUTE_ANALOG_MIN, ABSOLUTE_ANALOG_MAX, 0, 4.5*PI);
+        float x = map((float)block->data[i], INT16_MIN, INT16_MAX, 0, 4.5*PI);
 
         if(outBlock1){
           float out1 = constrain(100 * cos(x) + pow(x,2), 0, 100) / 100;
