@@ -215,8 +215,8 @@ inline void Voice::update(void)
     this->filter5->resonance(noiseFilterResonance);
     this->filter6->resonance(noiseFilterResonance);
 
-    // Volume needs to go way down when resonance goes up
-    this->noise->amplitude(0.0009); // vol
+    // Volume needs to be very low due to resonance 
+    this->noise->amplitude(0.001); // vol
     release(shapeBlock);
   }
 

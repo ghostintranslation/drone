@@ -45,54 +45,54 @@ inline int16_t *&OutputLed::updateBefore(int16_t *&blockData)
     {
         switch (this->status)
         {
-        // case Blink:
-        //     if (this->statusSamplesleft > this->blinkingDuration / 2)
-        //     {
-        //         blockData[i] = INT16_MIN;
-        //     }
-        //     else if (this->statusSamplesleft == 0)
-        //     {
-        //         this->statusSamplesleft = this->blinkingDuration;
-        //     }
-        //     else
-        //     {
-        //         blockData[i] = INT16_MAX;
-        //     }
-        //     break;
+        case Blink:
+            if (this->statusSamplesleft > this->blinkingDuration / 2)
+            {
+                blockData[i] = INT16_MIN;
+            }
+            else if (this->statusSamplesleft == 0)
+            {
+                this->statusSamplesleft = this->blinkingDuration;
+            }
+            else
+            {
+                blockData[i] = INT16_MAX;
+            }
+            break;
 
-        // case BlinkFast:
-        //     if (this->statusSamplesleft > this->fastBlinkingDuration / 2)
-        //     {
-        //         blockData[i] = INT16_MIN;
-        //     }
-        //     else if (this->statusSamplesleft == 0)
-        //     {
-        //         this->statusSamplesleft = this->fastBlinkingDuration;
-        //     }
-        //     else
-        //     {
-        //         blockData[i] = INT16_MAX;
-        //     }
-        //     break;
+        case BlinkFast:
+            if (this->statusSamplesleft > this->fastBlinkingDuration / 2)
+            {
+                blockData[i] = INT16_MIN;
+            }
+            else if (this->statusSamplesleft == 0)
+            {
+                this->statusSamplesleft = this->fastBlinkingDuration;
+            }
+            else
+            {
+                blockData[i] = INT16_MAX;
+            }
+            break;
 
-        // case BlinkOnce:
-        //     if (this->statusSamplesleft > 0)
-        //     {
-        //         blockData[i] = INT16_MAX;
-        //     }
-        //     else
-        //     {
-        //         blockData[i] = INT16_MIN;
-        //     }
-        //     break;
+        case BlinkOnce:
+            if (this->statusSamplesleft > 0)
+            {
+                blockData[i] = INT16_MAX;
+            }
+            else
+            {
+                blockData[i] = INT16_MIN;
+            }
+            break;
 
-        // case Off:
-        //     blockData[i] = INT16_MIN;
-        //     break;
+        case Off:
+            blockData[i] = INT16_MIN;
+            break;
 
-        // case On:
-        //     blockData[i] = INT16_MAX;
-        //     break;
+        case On:
+            blockData[i] = INT16_MAX;
+            break;
 
         default:
         case Default:

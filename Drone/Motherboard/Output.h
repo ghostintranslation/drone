@@ -78,7 +78,6 @@ inline void Output::update(void)
         {
             blockDataPointer[i] = block->data[i];
         }
-
         release(block);
     }
 
@@ -105,11 +104,6 @@ inline void Output::update(void)
             queue[this->index][sampleIndex] = offsetValue;
         }
     }
-
-    // if (this->index == 0)
-    // {
-    //     Serial.println(queue[this->index][0]);
-    // }
 }
 
 /**
@@ -121,17 +115,6 @@ inline void Output::timerCallback()
 {
     if (ticks == currentBit)
     {
-
-        // if(currentBit == 1){
-        //     cc++;
-        //     if (cc >= 100)
-        //     {
-        //         Serial.println(counter / 100);
-        //         counter = 0;
-        //         cc = 0;
-        //     }
-        // }
-
         uint32_t bits = 0;
         for (uint8_t i = 0; i < maxOutputs; i++)
         {
@@ -139,18 +122,6 @@ inline void Output::timerCallback()
             {
                 bits = bits | 1 << i;
             }
-            // if (head[i] >= buffSize)
-            // {
-            //     head[i] = 0;
-            // }
-
-            // error[i] += queue[i][head[i]++]; // integrate error (SIGMA)
-
-            // if (error[i] >= resolution) // if error >= max value (DELTA)
-            // {
-            //     bits = bits | 1 << i;
-            //     error[i] -= resolution;
-            // }
         }
 
         SPI.beginTransaction(SPISettings(50000000, MSBFIRST, SPI_MODE0));
@@ -158,10 +129,6 @@ inline void Output::timerCallback()
         // Set the latch to low (activate the shift registers)
         digitalWriteFast(REGISTERS_LATCH_PIN, LOW);
 
-        // for (int i = 1; i >= 0; i--)
-        // {
-        //     SPI.transfer16(bits >> (i * 16) & 0xFFFF);
-        // }
         SPI.transfer16(bits & 0xFFFF);
 
         // Set the latch to high (shift registers actually set their pins and stop listening)
@@ -169,14 +136,11 @@ inline void Output::timerCallback()
 
         SPI.endTransaction();
 
-
-// Serial.println(bits);
         currentBit <<= 1;
 
         if (currentBit > resolution / 2)
         {
             currentBit = 1;
-
         }
     }
 
@@ -214,14 +178,6 @@ inline void Output::setSmoothing(float smoothing)
         smoothing = 0.999999;
     }
 
-    // if (smoothing == 0)
-    // {
-    //     this->smoothing = 0;
-    // }
-    // else
-    // {
-    //     this->smoothing = log10(9.99 + smoothing * 0.01);
-    // }
     this->smoothing = smoothing;
 }
 
