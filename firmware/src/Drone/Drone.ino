@@ -25,10 +25,11 @@ https://www.ghostintranslation.com/
 #include <Audio.h>
 #include "Drone.h"
 
+AudioOutputI2S i2s;
+
 // Instanciation of Drone
 Drone *drone = Drone::getInstance();
 
-AudioOutputI2S i2s;
 
 void setup()
 {
