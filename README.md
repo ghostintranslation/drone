@@ -1,6 +1,4 @@
-# DRONE
-
-![GitHub version](https://img.shields.io/github/v/release/ghostintranslation/drone.svg?include_prereleases)
+# DRONE ![GitHub version](https://img.shields.io/github/v/release/ghostintranslation/drone.svg?include_prereleases)
 
 Drone is a modular drone synthesizer based on my [Motherboard](https://github.com/ghostintranslation/motherboard) platform.
 
