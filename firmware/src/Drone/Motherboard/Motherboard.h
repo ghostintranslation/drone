@@ -1,7 +1,6 @@
 #ifndef Motherboard_h
 #define Motherboard_h
 
-#include "Configuration.h"
 #include "SystemExclusiveManager.h"
 
 class Motherboard
@@ -14,7 +13,6 @@ private:
 
 public:
     static Motherboard *getInstance();
-    static void init();
 };
 
 // Singleton pre init
@@ -22,11 +20,6 @@ Motherboard *Motherboard::instance = nullptr;
 
 inline Motherboard::Motherboard()
 {
-}
-
-inline void Motherboard::init()
-{
-    Configuration::loadFromMemory();
     SystemExclusiveManager::getInstance();
 }
 

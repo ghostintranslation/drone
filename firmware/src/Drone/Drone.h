@@ -125,8 +125,6 @@ inline void Drone::init()
   this->midiCCMixSetting = new Setting("midi-cc-mix", "Midi CC Mix", 5, 1, 127, 1);
   this->midiCCShapeSetting = new Setting("midi-cc-shape", "Midi CC Shape", 6, 1, 127, 1);
 
-  Motherboard::init();
-
   this->midiCCTune1 = new MidiInput(this->midiCCTune1Setting);
   this->midiCCTune2 = new MidiInput(this->midiCCTune2Setting);
   this->midiCCTune3 = new MidiInput(this->midiCCTune3Setting);

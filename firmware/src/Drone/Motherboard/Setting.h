@@ -2,7 +2,9 @@
 #define Setting_h
 
 #include "Registrar.h"
+#include <EEPROM.h>
 #include "lib/ArduinoJson-v7.1.0.h"
+#include "lib/ArduinoStreamUtils/StreamUtils.h"
 
 class Setting : public Registrar<Setting>
 {
@@ -17,6 +19,10 @@ public:
     float getStep();
     void setValue(float value);
     JsonDocument serialize(bool onlyIdandValue);
+    static JsonDocument serializeAll(bool onlyIdandValue);
+    static void loadFromMemory();
+    static void loadFromJson(JsonDocument doc);
+    static void save();
 
 private:
     String id;
@@ -36,6 +42,8 @@ inline Setting::Setting(String id, String name, float defaultValue, float min, f
     this->min = min;
     this->max = max;
     this->step = step;
+
+    Setting::loadFromMemory();
 }
 
 inline String Setting::getId()
@@ -95,6 +103,88 @@ inline JsonDocument Setting::serialize(bool onlyIdandValue = false)
         setting["step"] = this->getStep();
     }
     return doc;
+}
+
+inline JsonDocument Setting::serializeAll(bool onlyIdandValue = false)
+{
+    JsonDocument doc;
+
+    for (unsigned int i = 0; i < Setting::getCount(); i++)
+    {
+        doc["settings"][i] = Setting::get(i)->serialize(onlyIdandValue);
+    }
+
+    doc.shrinkToFit();
+
+    return doc;
+}
+
+inline void Setting::loadFromMemory()
+{
+    Serial.println("Setting::loadFromMemory");
+    Serial.println(EEPROM.length());
+
+    // Find EOF index to know the length
+    uint16_t eofIndex = 0;
+    for (int i = 0; i < EEPROM.length(); i++)
+    {
+        Serial.print((char)EEPROM.read(i));
+        if (EEPROM.read(i) == 26)
+        {
+            eofIndex = i;
+            break;
+        }
+    }
+    Serial.println("");
+
+    JsonDocument doc;
+    EepromStream eepromStream(0, eofIndex + 1);
+
+    DeserializationError error = deserializeJson(doc, eepromStream);
+
+    if (error)
+    {
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.c_str());
+        return;
+    }
+
+    Setting::loadFromJson(doc);
+}
+
+inline void Setting::loadFromJson(JsonDocument doc)
+{
+    Serial.println("Setting::loadFromJson");
+    JsonArray settings = doc["settings"];
+    for (JsonVariant item : settings)
+    {
+        for (unsigned int i = 0; i < Setting::getCount(); i++)
+        {
+            Setting *setting = Setting::get(i);
+            // Serial.println((String)item["id"]);
+            // Serial.println(setting->get(i)->getId());
+            // Serial.println("");
+            if (item["id"] == setting->get(i)->getId())
+            {
+                // Serial.println("Setting::loadFromJson 2");
+                setting->setValue(item["value"]);
+            }
+        }
+    }
+}
+
+inline void Setting::save()
+{
+    Serial.println("Setting::save");
+    Serial.println(EEPROM.length());
+
+    EepromStream eepromStream(0, EEPROM.length());
+
+    JsonDocument doc = Setting::serializeAll(true);
+    uint16_t length = serializeJson(doc, eepromStream);
+    Serial.printf("Serialized length: %d", length);
+    Serial.println("");
+    EEPROM.write(length, 26); // End of file char
 }
 
 #endif

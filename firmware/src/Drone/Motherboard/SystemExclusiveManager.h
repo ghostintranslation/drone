@@ -18,7 +18,6 @@ void printBytes(const byte *data, unsigned int size)
 }
 
 #include "Setting.h"
-#include "Configuration.h"
 #include "lib/ArduinoJson-v7.1.0.h"
 
 class SystemExclusiveManager
@@ -116,7 +115,7 @@ inline void SystemExclusiveManager::handleSystemExclusiveMessage()
 
 inline void SystemExclusiveManager::sendConfiguration()
 {
-  JsonDocument doc = Configuration::getJson();
+  JsonDocument doc = Setting::serializeAll();
 
   uint8_t output[1080];
 
@@ -141,7 +140,7 @@ inline void SystemExclusiveManager::receiveConfiguration(const byte *data)
   }
 
   // TODO: Saving
-  Configuration::loadFromJson(doc);
-  Configuration::save();
+  Setting::loadFromJson(doc);
+  Setting::save();
 }
 #endif
