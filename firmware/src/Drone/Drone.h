@@ -2,9 +2,11 @@
 #define Drone_h
 
 #include <Audio.h>
-
+#include "Motherboard/Motherboard.h"
 #include "Motherboard/Input.h"
 #include "Motherboard/OutputLed.h"
+#include "Motherboard/Setting.h"
+#include "Motherboard/MidiInput.h"
 #include "Voice.h"
 #include "LinearToSpiral.h"
 #include "Combine.h"
@@ -35,6 +37,14 @@ private:
   Input *shapeMod;
   Input *fmRange;
 
+  // Midi inputs
+  MidiInput *midiCCTune1;
+  MidiInput *midiCCTune2;
+  MidiInput *midiCCTune3;
+  MidiInput *midiCCTune4;
+  MidiInput *midiCCMix;
+  MidiInput *midiCCShape;
+
   // Leds
   OutputLed *led1;
   OutputLed *led2;
@@ -54,10 +64,23 @@ private:
   static const byte voiceCount = 4;
   Voice *voices[voiceCount];
 
+  Combine *tune1Combine;
+  Combine *tune2Combine;
+  Combine *tune3Combine;
+  Combine *tune4Combine;
   Combine *mixCombine;
   Combine *shapeCombine;
 
   AudioMixer4 *output;
+
+  // Settings
+  // Setting *midiChannelSetting;
+  Setting *midiCCTune1Setting;
+  Setting *midiCCTune2Setting;
+  Setting *midiCCTune3Setting;
+  Setting *midiCCTune4Setting;
+  Setting *midiCCMixSetting;
+  Setting *midiCCShapeSetting;
 
 public:
   static Drone *getInstance();
@@ -92,6 +115,25 @@ inline Drone *Drone::getInstance()
 */
 inline void Drone::init()
 {
+
+  // Settings
+  // this->midiChannelSetting = new Setting("midi-channel", "Midi Channel", 0, 0, 8, 1);
+  this->midiCCTune1Setting = new Setting("midi-cc-tune-1", "Midi CC Voice 1 tune", 1, 1, 127, 1);
+  this->midiCCTune2Setting = new Setting("midi-cc-tune-2", "Midi CC Voice 2 tune", 2, 1, 127, 1);
+  this->midiCCTune3Setting = new Setting("midi-cc-tune-3", "Midi CC Voice 3 tune", 3, 1, 127, 1);
+  this->midiCCTune4Setting = new Setting("midi-cc-tune-4", "Midi CC Voice 4 tune", 4, 1, 127, 1);
+  this->midiCCMixSetting = new Setting("midi-cc-mix", "Midi CC Mix", 5, 1, 127, 1);
+  this->midiCCShapeSetting = new Setting("midi-cc-shape", "Midi CC Shape", 6, 1, 127, 1);
+
+  Motherboard::init();
+
+  this->midiCCTune1 = new MidiInput(this->midiCCTune1Setting);
+  this->midiCCTune2 = new MidiInput(this->midiCCTune2Setting);
+  this->midiCCTune3 = new MidiInput(this->midiCCTune3Setting);
+  this->midiCCTune4 = new MidiInput(this->midiCCTune4Setting);
+  this->midiCCMix = new MidiInput(this->midiCCMixSetting);
+  this->midiCCShape = new MidiInput(this->midiCCShapeSetting);
+
   this->tune1 = new Input(0);
   this->tune2 = new Input(1);
   this->tune3 = new Input(2);
@@ -121,6 +163,10 @@ inline void Drone::init()
 
   this->linearToSpiral = new LinearToSpiral();
 
+  this->tune1Combine = new Combine();
+  this->tune2Combine = new Combine();
+  this->tune3Combine = new Combine();
+  this->tune4Combine = new Combine();
   this->mixCombine = new Combine();
   this->shapeCombine = new Combine();
 
@@ -136,16 +182,30 @@ inline void Drone::init()
     new AudioConnection(*this->voices[i], 0, *this->output, i);
   }
 
-  new AudioConnection(*this->tune1, 0, *this->voices[0], 0);
-  new AudioConnection(*this->tune2, 0, *this->voices[1], 0);
-  new AudioConnection(*this->tune3, 0, *this->voices[2], 0);
-  new AudioConnection(*this->tune4, 0, *this->voices[3], 0);
+  // Tune 1
+  new AudioConnection(*this->tune1, 0, *this->tune1Combine, 0);
+  new AudioConnection(*this->midiCCTune1, 0, *this->tune1Combine, 1);
+  new AudioConnection(*this->tune1Combine, 0, *this->voices[0], 0);
+  // Tune 2
+  new AudioConnection(*this->tune2, 0, *this->tune2Combine, 0);
+  new AudioConnection(*this->midiCCTune2, 0, *this->tune2Combine, 1);
+  new AudioConnection(*this->tune2Combine, 0, *this->voices[1], 0);
+  // Tune 3
+  new AudioConnection(*this->tune3, 0, *this->tune3Combine, 0);
+  new AudioConnection(*this->midiCCTune3, 0, *this->tune3Combine, 1);
+  new AudioConnection(*this->tune3Combine, 0, *this->voices[2], 0);
+  // Tune 4
+  new AudioConnection(*this->tune4, 0, *this->tune4Combine, 0);
+  new AudioConnection(*this->midiCCTune4, 0, *this->tune4Combine, 1);
+  new AudioConnection(*this->tune4Combine, 0, *this->voices[3], 0);
+
   new AudioConnection(*this->voct1, 0, *this->voices[0], 1);
   new AudioConnection(*this->voct2, 0, *this->voices[1], 1);
   new AudioConnection(*this->voct3, 0, *this->voices[2], 1);
   new AudioConnection(*this->voct4, 0, *this->voices[3], 1);
   new AudioConnection(*this->mix, 0, *this->mixCombine, 0);
   new AudioConnection(*this->mixMod, 0, *this->mixCombine, 1);
+  new AudioConnection(*this->midiCCMix, 0, *this->mixCombine, 2);
   new AudioConnection(*this->mixCombine, 0, *this->linearToSpiral, 0);
   new AudioConnection(*this->linearToSpiral, 0, *this->voices[0], 2);
   new AudioConnection(*this->linearToSpiral, 1, *this->voices[1], 2);
@@ -157,6 +217,7 @@ inline void Drone::init()
   new AudioConnection(*this->linearToSpiral, 3, *this->led3, 0);
   new AudioConnection(*this->shape, 0, *this->shapeCombine, 0);
   new AudioConnection(*this->shapeMod, 0, *this->shapeCombine, 1);
+  new AudioConnection(*this->midiCCShape, 0, *this->shapeCombine, 2);
   new AudioConnection(*this->shapeCombine, 0, *this->voices[0], 3);
   new AudioConnection(*this->shapeCombine, 0, *this->voices[1], 3);
   new AudioConnection(*this->shapeCombine, 0, *this->voices[2], 3);

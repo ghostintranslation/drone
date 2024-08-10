@@ -30,7 +30,6 @@ AudioOutputI2S i2s;
 // Instanciation of Drone
 Drone *drone = Drone::getInstance();
 
-
 void setup()
 {
   Serial.begin(115200);
@@ -48,4 +47,6 @@ void setup()
 
 void loop()
 {
+  // MIDI.read();
+  usbMIDI.read();
 }
