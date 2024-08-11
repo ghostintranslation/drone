@@ -3,10 +3,6 @@
 
 #include <Audio.h>
 #include "Motherboard/Motherboard.h"
-#include "Motherboard/Input.h"
-#include "Motherboard/OutputLed.h"
-#include "Motherboard/Setting.h"
-#include "Motherboard/MidiInput.h"
 #include "Voice.h"
 #include "LinearToSpiral.h"
 #include "Combine.h"
