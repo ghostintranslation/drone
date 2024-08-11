@@ -1,7 +1,7 @@
 /*
 GHOST IN TRANSLATION
 DRONE
-v2.0.0
+v2.0.0-beta2
 
 Support my work:
 https://patreon.com/ghostintranslation
@@ -29,7 +29,6 @@ AudioOutputI2S i2s;
 
 // Instanciation of Drone
 Drone *drone = Drone::getInstance();
-
 
 void setup()
 {
