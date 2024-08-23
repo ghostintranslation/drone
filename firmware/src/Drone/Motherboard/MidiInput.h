@@ -56,6 +56,8 @@ inline void MidiInput::readMidi()
 
 inline void MidiInput::handleMidiControlChange(byte channel, byte control, byte value)
 {
+    Serial.printf("%d %d %d", channel, control, value);
+    Serial.println("");
     for (unsigned int i = 0; i < MidiInput::getCount(); i++)
     {
         MidiInput *midiInput = MidiInput::get(i);
