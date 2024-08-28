@@ -47,6 +47,4 @@ void setup()
 
 void loop()
 {
-  // MIDI.read();
-  usbMIDI.read();
 }

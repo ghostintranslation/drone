@@ -34,12 +34,12 @@ private:
   Input *fmRange;
 
   // Midi inputs
-  MidiInput *midiCCTune1;
-  MidiInput *midiCCTune2;
-  MidiInput *midiCCTune3;
-  MidiInput *midiCCTune4;
-  MidiInput *midiCCMix;
-  MidiInput *midiCCShape;
+  MidiCCInput *midiCCTune1;
+  MidiCCInput *midiCCTune2;
+  MidiCCInput *midiCCTune3;
+  MidiCCInput *midiCCTune4;
+  MidiCCInput *midiCCMix;
+  MidiCCInput *midiCCShape;
 
   // Leds
   OutputLed *led1;
@@ -121,18 +121,19 @@ inline void Drone::init()
   this->midiCCMixSetting = new Setting("midi-cc-mix", "Midi CC Mix", 5, 1, 127, 1);
   this->midiCCShapeSetting = new Setting("midi-cc-shape", "Midi CC Shape", 6, 1, 127, 1);
 
-  this->midiCCTune1 = new MidiInput(this->midiCCTune1Setting);
-  this->midiCCTune2 = new MidiInput(this->midiCCTune2Setting);
-  this->midiCCTune3 = new MidiInput(this->midiCCTune3Setting);
-  this->midiCCTune4 = new MidiInput(this->midiCCTune4Setting);
-  this->midiCCMix = new MidiInput(this->midiCCMixSetting);
-  this->midiCCShape = new MidiInput(this->midiCCShapeSetting);
+  this->midiCCTune1 = new MidiCCInput(this->midiCCTune1Setting);
+  this->midiCCTune2 = new MidiCCInput(this->midiCCTune2Setting);
+  this->midiCCTune3 = new MidiCCInput(this->midiCCTune3Setting);
+  this->midiCCTune4 = new MidiCCInput(this->midiCCTune4Setting);
+  this->midiCCMix = new MidiCCInput(this->midiCCMixSetting);
+  this->midiCCShape = new MidiCCInput(this->midiCCShapeSetting);
 
   this->tune1 = new Input(0);
   this->tune2 = new Input(1);
   this->tune3 = new Input(2);
   this->tune4 = new Input(3);
   this->mix = new Input(4);
+  this->mix->setMidiInput(this->midiCCMix);
   // this->mix->setLowPassCoeff(0.0001);
   this->shape = new Input(5);
   this->voct1 = new Input(6);
@@ -199,7 +200,7 @@ inline void Drone::init()
   new AudioConnection(*this->voct4, 0, *this->voices[3], 1);
   new AudioConnection(*this->mix, 0, *this->mixCombine, 0);
   new AudioConnection(*this->mixMod, 0, *this->mixCombine, 1);
-  new AudioConnection(*this->midiCCMix, 0, *this->mixCombine, 2);
+  // new AudioConnection(*this->midiCCMix, 0, *this->mixCombine, 2);
   new AudioConnection(*this->mixCombine, 0, *this->linearToSpiral, 0);
   new AudioConnection(*this->linearToSpiral, 0, *this->voices[0], 2);
   new AudioConnection(*this->linearToSpiral, 1, *this->voices[1], 2);
