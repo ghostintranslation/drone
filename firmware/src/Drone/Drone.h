@@ -8,6 +8,7 @@
 #include "Voice.h"
 #include "LinearToSpiral.h"
 #include "Combine.h"
+#include "effect_compressor.h"
 
 /*
    Drone
@@ -57,6 +58,7 @@ private:
   Combine *mixCombine;
   Combine *shapeCombine;
 
+  AudioEffectCompressor *compressor;
   AudioMixer4 *output;
 
 public:
@@ -64,7 +66,7 @@ public:
   void init();
 
   // Audio output
-  AudioMixer4 *getOutput();
+  AudioStream *getOutput();
 };
 
 // Singleton pre init
@@ -124,6 +126,9 @@ inline void Drone::init()
   this->mixCombine = new Combine();
   this->shapeCombine = new Combine();
 
+  this->compressor = new AudioEffectCompressor();
+  this->compressor->setInputGain(0.1);
+
   this->output = new AudioMixer4();
   this->output->gain(0, 0.1); // 0.012, 0.25
   this->output->gain(1, 0.1);
@@ -172,13 +177,14 @@ inline void Drone::init()
   new AudioConnection(*this->fmRange, 0, *this->voices[1], 4);
   new AudioConnection(*this->fmRange, 0, *this->voices[3], 4);
   new AudioConnection(*this->fmRange, 0, *this->voices[2], 4);
+  new AudioConnection(*this->output, 0, *this->compressor, 0);
 }
 
 /**
-   Return the audio left output
+   The audio output
 */
-inline AudioMixer4 *Drone::getOutput()
+inline AudioStream *Drone::getOutput()
 {
-  return this->output;
+  return this->compressor;
 }
 #endif

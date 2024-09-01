@@ -1,7 +1,7 @@
 /*
 GHOST IN TRANSLATION
 DRONE
-v2.0.0-beta2
+v2.0.0-beta3
 
 Support my work:
 https://patreon.com/ghostintranslation
