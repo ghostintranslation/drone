@@ -8,21 +8,20 @@
 /*
  * Voice
  */
-class Voice : public AudioStream
-{
+class Voice : public AudioStream {
 private:
   audio_block_t *inputQueueArray[5];
 
   // TODO: Add sawtooth and square?
   AudioSynthWaveformModulated *sine;
 
-  AudioSynthNoisePink *noise;        // xy=174,124
-  AudioFilterStateVariable *filter1; // xy=366,135
-  AudioFilterStateVariable *filter2; // xy=366,135
-  AudioFilterStateVariable *filter3; // xy=366,135
-  AudioFilterStateVariable *filter4; // xy=366,135
-  AudioFilterStateVariable *filter5; // xy=366,135
-  AudioFilterStateVariable *filter6; // xy=366,135
+  AudioSynthNoisePink *noise;
+  AudioFilterStateVariable *filter1;
+  AudioFilterStateVariable *filter2;
+  AudioFilterStateVariable *filter3;
+  AudioFilterStateVariable *filter4;
+  AudioFilterStateVariable *filter5;
+  AudioFilterStateVariable *filter6;
   float noiseFilterResonance = 1;
 
   Vcc *shapeCrossfader;
@@ -34,18 +33,15 @@ private:
   AudioPlayQueue *shapeCrossfaderQueue;
   Vca *vca1;
 
-  int16_t frequencyData[AUDIO_BLOCK_SAMPLES] = {0};
-  int16_t sineFrequencyData[AUDIO_BLOCK_SAMPLES] = {0};
-  int16_t filtersFrequencyData[AUDIO_BLOCK_SAMPLES] = {0};
-  int16_t gainData[AUDIO_BLOCK_SAMPLES] = {0};
-  int16_t shapeCrossfaderData[AUDIO_BLOCK_SAMPLES] = {0};
+  int16_t frequencyData[AUDIO_BLOCK_SAMPLES] = { 0 };
+  int16_t sineFrequencyData[AUDIO_BLOCK_SAMPLES] = { 0 };
+  int16_t filtersFrequencyData[AUDIO_BLOCK_SAMPLES] = { 0 };
+  int16_t gainData[AUDIO_BLOCK_SAMPLES] = { 0 };
+  int16_t shapeCrossfaderData[AUDIO_BLOCK_SAMPLES] = { 0 };
 
   int16_t fmRange = INT16_MAX;
 
-  float frequencyCenter = 220.0;
-  float vOct = 0;
-  float frequency = frequencyCenter;
-
+  float frequency = 55;
 public:
   Voice();
   void update(void);
@@ -55,8 +51,7 @@ public:
  * Constructor
  */
 inline Voice::Voice()
-    : AudioStream(5, inputQueueArray)
-{
+  : AudioStream(5, inputQueueArray) {
   // Sine and Triangle sources
   this->sine = new AudioSynthWaveformModulated();
   this->sine->begin(WAVEFORM_SINE);
@@ -112,7 +107,6 @@ inline Voice::Voice()
   this->shapeCrossfaderQueue = new AudioPlayQueue();
 
   this->vca1 = new Vca();
-  // this->vca2 = new Vca();
 
   // Audio output 1
   new AudioConnection(*this->sineFrequencyQueue, 0, *this->sine, 0);
@@ -138,8 +132,7 @@ inline Voice::Voice()
   new AudioConnection(*this->filter6, 0, *this->shapeCrossfader, 1);
 }
 
-inline void Voice::update(void)
-{
+inline void Voice::update(void) {
   // Receive input data
   audio_block_t *freqBlock;
   audio_block_t *fmBlock;
@@ -151,9 +144,10 @@ inline void Voice::update(void)
   // Receiving data from input of the block, and passing it to the queue which is connected to the other objects
   freqBlock = receiveReadOnly(0);
 
-  if (freqBlock)
-  {
-    this->frequencyCenter = 55 + (float)(freqBlock->data[0] + 32668) / 65335.0 * (880 - 55);
+  float tune = 0;
+
+  if (freqBlock) {
+    tune = (float)(freqBlock->data[0] + 32668) / 65335.0;
     release(freqBlock);
   }
 
@@ -161,18 +155,17 @@ inline void Voice::update(void)
   // Receiving data from input of the block, and passing it to the queue which is connected to the other objects
   fmBlock = receiveReadOnly(1);
 
-  if (fmBlock)
-  {
-    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
-    {
-    }
-    this->vOct = (float)(fmBlock->data[0] + 32668) / 65335.0;
+  float vOct = 0;
+
+  if (fmBlock) {
+    vOct = (float)(fmBlock->data[0] + 32668) / 65335.0;  // TODO: This highly limits the max frequency, should read all samples
 
     release(fmBlock);
   }
 
   // Setting the frequency
-  this->frequency = this->frequencyCenter * pow(2, this->vOct * 5);
+  float baseFreq = 55 * pow(2, tune * 6);
+  this->frequency = (baseFreq * pow(2, vOct * 5));
   this->sine->frequency(this->frequency);
   this->filter1->frequency(this->frequency);
   this->filter2->frequency(this->frequency);
@@ -185,10 +178,8 @@ inline void Voice::update(void)
   // Receiving data from input of the block, and passing it to the queue which is connected to the other objects
   gainBlock = receiveReadOnly(2);
 
-  if (gainBlock)
-  {
-    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
-    {
+  if (gainBlock) {
+    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
       this->gainData[i] = gainBlock->data[i];
     }
 
@@ -200,10 +191,8 @@ inline void Voice::update(void)
   // Shape block
   shapeBlock = receiveReadOnly(3);
 
-  if (shapeBlock)
-  {
-    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
-    {
+  if (shapeBlock) {
+    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
       this->shapeCrossfaderData[i] = shapeBlock->data[i];
       float newVal = (((float)shapeBlock->data[i] + (float)32668) / (float)65335) * 7;
       noiseFilterResonance = noiseFilterResonance * (float)0.5 + newVal * (float)0.5;
@@ -215,24 +204,20 @@ inline void Voice::update(void)
     this->filter5->resonance(noiseFilterResonance);
     this->filter6->resonance(noiseFilterResonance);
 
-    // Volume needs to be very low due to resonance 
-    this->noise->amplitude(0.001); // vol
+    // Volume needs to be very low due to resonance
+    this->noise->amplitude(0.001);  // vol
     release(shapeBlock);
   }
 
   this->shapeCrossfaderQueue->play(this->shapeCrossfaderData, AUDIO_BLOCK_SAMPLES);
 
   // Transmitting the audio queue 1
-  if (this->audioOutQueue1->available())
-  {
-    while (this->audioOutQueue1->available())
-    {
+  if (this->audioOutQueue1->available()) {
+    while (this->audioOutQueue1->available()) {
       audio_block_t *audioBlock = allocate();
-      if (audioBlock)
-      {
+      if (audioBlock) {
         int16_t *queueData = this->audioOutQueue1->readBuffer();
-        for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
-        {
+        for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
           audioBlock->data[i] = queueData[i];
         }
         transmit(audioBlock, 0);
@@ -244,10 +229,8 @@ inline void Voice::update(void)
 
   // FM range block
   fmRangeBlock = receiveReadOnly(4);
-  if (fmRangeBlock)
-  {
-    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++)
-    {
+  if (fmRangeBlock) {
+    for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
       this->sineFrequencyData[i] = fmRangeBlock->data[i];
     }
 

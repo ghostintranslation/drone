@@ -1,12 +1,12 @@
 /*
 GHOST IN TRANSLATION
 DRONE
-v2.0.0-beta3
+v2.0.0
 
 Support my work:
-https://patreon.com/ghostintranslation
 https://www.buymeacoffee.com/ghostintranslation
-https://www.paypal.com/paypalme/ghostintranslation
+https://ko-fi.com/ghostintranslation
+
 
 Music and Merch:
 https://ghostintranslation.bandcamp.com/
@@ -26,6 +26,7 @@ https://www.ghostintranslation.com/
 #include "Drone.h"
 
 AudioOutputI2S i2s;
+AudioOutputUSB usb;
 
 // Instanciation of Drone
 Drone *drone = Drone::getInstance();
@@ -43,6 +44,8 @@ void setup()
   drone->init();
   new AudioConnection(*drone->getOutput(), 0, i2s, 0);
   new AudioConnection(*drone->getOutput(), 0, i2s, 1);
+  new AudioConnection(*drone->getOutput(), 0, usb, 0);
+  new AudioConnection(*drone->getOutput(), 0, usb, 1);
 }
 
 void loop()
