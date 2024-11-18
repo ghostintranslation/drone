@@ -40,7 +40,6 @@ A schematics export out of Eagle is available under the hardware folder.
 #### Considerations
 
 - The value of the resistors depend on the LEDs you choose. White LEDs might be more bright and require higher values like 1k while red LEDs might only require 150 ohms.
-- The diodes are optional. If your Motherboard uses multiplexers that include protections agains't voltages out of the supply range (SN74HC4051) then you don't need the diodes. If that's not the case and you omit the diodes, an input that receives a negative voltage, for example, will pull down the following inputs too and eventually the multiplexers might fry. 
 
 ### Firmware
 
