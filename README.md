@@ -2,7 +2,7 @@
 
 Drone is a modular drone synthesizer based on my [Motherboard](https://github.com/ghostintranslation/motherboard) platform.
 
-<img src="./hardware/drone-1.JPG" width="200px"/> <img src="./hardware/drone-2.JPG" width="200px"/> 
+<img src="./hardware/drone-white.WEBP" width="200px"/> <img src="./hardware/drone-black.WEBP" width="200px"/> 
 
 ## Features
 
