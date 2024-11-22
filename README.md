@@ -96,7 +96,12 @@ Inputs:
 TODO
 
 # About me
-You can find me on Bandcamp, Instagram, Youtube:
+
+You can buy PCBs on my website:
+
+https://www.ghostintranslation.com/
+
+You can also find me on Bandcamp, Instagram, YouTube:
 
 https://ghostintranslation.bandcamp.com/
 
@@ -104,15 +109,11 @@ https://www.instagram.com/ghostintranslation/
 
 https://www.youtube.com/ghostintranslation
 
-
-# Support
 To support my work:
 
-https://www.patreon.com/ghostintranslation
-
-https://www.paypal.com/paypalme/ghostintranslation
-
 https://www.buymeacoffee.com/ghostintranslation
+
+https://ko-fi.com/ghostintranslation
 
 # License
 
