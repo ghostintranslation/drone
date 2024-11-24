@@ -9,7 +9,7 @@ Drone is a modular drone synthesizer based on my [Motherboard](https://github.co
 * 4 voices with sine and filtered resonant noise
 * Individual v/oct
 * FM CV
-* MIDI over mini jack
+* MIDI TRS (Type A)
 
 ## Dimensions
 
@@ -27,15 +27,15 @@ This module is based on the Motherboard and assumes you already have one built. 
 ```
 2 x 24 pin header
 6 x 10k linear potentiometer
-8 x thonkiconn 3.5mm jack socket
+7 x mono Thonkiconn jack socket
+1 x stereo Thonkiconn jack socket
 11 x 3mm led
-11 x 150 ohm resistor (or more depending of the leds)
-14 x BAT43 diode (optional)
+11 x 150 ohm resistor (or higher depending of the leds)
 ```
 
 ### Assembly
 
-A schematics export out of Eagle is available under the hardware folder.
+Schematics are available under the hardware folder.
 
 #### Considerations
 
@@ -43,12 +43,12 @@ A schematics export out of Eagle is available under the hardware folder.
 
 ### Firmware
 
-**Make sure the Motherboard is not powered with external power when pluggin Teensy to a computer!**
+**⚠️ Make sure the Motherboard is not powered with external power when pluggin Teensy to a computer!**
 
 In order to upload the firmware on the Teensy you have two possibilities.
 
 1. Install the Arduino IDE to build the firmware from the sources and upload to Teensy
-    - Follow the instructions from the official page, section "Arduino 2.0.x Software Development": https://www.pjrc.com/teensy/td_download.html
+    - Follow the official instructions to install the Arduino IDE for Teensy, section "Arduino 2.0.x Software Development": https://www.pjrc.com/teensy/td_download.html
     - Then open the file `firmware/src/Drone/Drone.ino`.
     - In the Tools -> USB Type menu, choose Serial.
     - Plug the Teensy to your computer with a micro USB cable.
@@ -58,7 +58,8 @@ In order to upload the firmware on the Teensy you have two possibilities.
     - Download the Teensy Loader from the official page: https://www.pjrc.com/teensy/loader.html
     - Open it
     - Plug the Teensy to your computer with a micro USB cable.
-    - Drag and drop the firmware found under `firmware/Drone.hex` in the loader
+    - Drag and drop the firmware found under `firmware/Drone.ino.hex` in the loader
+    - Press the button on the Teensy
 
 ## How to use
 
@@ -72,7 +73,7 @@ Controls:
         - LEDs indicate the presence of each voice
 
     Shape
-        - From sine to filtered resonant noise
+        - From sine to resonant noise
 
 Inputs:
     A,B,C,D
