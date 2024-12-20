@@ -99,15 +99,22 @@ inline void Drone::init()
   this->tune3 = new Input(2);
   this->tune4 = new Input(3);
   this->mix = new Input(4);
-  // this->mix->setLowPassCoeff(0.0001);
   this->shape = new Input(5);
   this->voct1 = new Input(6);
+  this->voct1->setLowPassCoeff(0.01);
   this->voct2 = new Input(7);
+  this->voct2->setLowPassCoeff(0.01);
   this->voct3 = new Input(8);
+  this->voct3->setLowPassCoeff(0.01);
   this->voct4 = new Input(9);
+  this->voct4->setLowPassCoeff(0.01);
   this->mixMod = new Input(10);
+  this->mixMod->setLowPassCoeff(0.01);
   this->shapeMod = new Input(11);
+  this->shapeMod->setLowPassCoeff(0.01);
   this->fmRange = new Input(12);
+  this->fmRange->setLowPassCoeff(0.2);
+
 
   this->led1 = new OutputLed(0);
   this->led2 = new OutputLed(1);

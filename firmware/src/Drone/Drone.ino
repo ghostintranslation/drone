@@ -1,25 +1,21 @@
 /*
 GHOST IN TRANSLATION
 DRONE
-v2.0.0
+v2.0.1
+
+https://www.ghostintranslation.com/
 
 Support my work:
 https://www.buymeacoffee.com/ghostintranslation
 https://ko-fi.com/ghostintranslation
+https://liberapay.com/ghostintranslation/
+https://github.com/sponsors/ghostintranslation
 
-
-Music and Merch:
+Stay in touch
 https://ghostintranslation.bandcamp.com/
-
-Social:
 https://www.instagram.com/ghostintranslation/
 https://www.youtube.com/ghostintranslation
-
-Code:
 https://github.com/ghostintranslation
-
-My website:
-https://www.ghostintranslation.com/
 */
 
 #include <Audio.h>

@@ -67,7 +67,7 @@ unsigned int Input::buffSize = AUDIO_BLOCK_SAMPLES;
 int16_t Input::queue[inputsMax][maxBuffers][AUDIO_BLOCK_SAMPLES] = {{{0}}};
 uint16_t Input::head[inputsMax] = {0};
 uint16_t Input::headQueueTempCount[inputsMax] = {0};
-int16_t Input::headQueueTemp[inputsMax][AUDIO_BLOCK_SAMPLES] = {{0}};
+int16_t Input::headQueueTemp[inputsMax][AUDIO_BLOCK_SAMPLES] = {{INT16_MIN}};
 uint16_t Input::tail[inputsMax] = {0};
 float Input::accumulator[inputsMax] = {0};
 float Input::lowPassCoeff[inputsMax] = {1.0f};
@@ -155,16 +155,15 @@ inline Input::Input(byte index)
     }
 
     // Start conversions
-    // TODO: Should be AUDIO_SAMPLE_RATE * 8 to reach 44.1kHz sampling per input,
-    // but it becomes noisy. Possibly too fast for the Teensy, missing samples, could interpolation fix it?
-    adc->adc0->startTimer(AUDIO_SAMPLE_RATE * 6);
+    adc->adc0->startTimer(AUDIO_SAMPLE_RATE * 8);
     if (inputsCount > 8)
     {
-        adc->adc1->startTimer(AUDIO_SAMPLE_RATE * 6);
+        adc->adc1->startTimer(AUDIO_SAMPLE_RATE * 8);
     }
 
-    lowPassCoeff[index] = 0.1;
-    accumulator[index] = 0;
+    lowPassCoeff[index] = 0.0005;
+    accumulator[index] = INT16_MIN;
+    headQueueTemp[index][0] = INT16_MIN;
 }
 
 inline void Input::update(void)

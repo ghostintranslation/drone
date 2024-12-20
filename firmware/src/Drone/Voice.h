@@ -235,9 +235,9 @@ inline void Voice::update(void) {
     }
 
     release(fmRangeBlock);
+    this->sineFrequencyQueue->play(this->sineFrequencyData, AUDIO_BLOCK_SAMPLES);
   }
 
-  this->sineFrequencyQueue->play(this->sineFrequencyData, AUDIO_BLOCK_SAMPLES);
 }
 
 #endif
