@@ -1,49 +1,64 @@
-#ifndef Combine_h
-#define Combine_h
+#ifndef Combine1_h
+#define Combine1_h
 
 #include <Audio.h>
 
-class Combine : public AudioStream {
+/**
+ * Combines analog signals by offseting them first
+ * so that there is no negative values in the sum
+ */
+template<int NN> class Combine : public AudioStream {
 private:
-  audio_block_t *inputQueueArray[1];
+  audio_block_t *inputQueueArray[NN];
+  void (*onChangeCallback)(int16_t value) = nullptr;
+  float lowPassCoeff = 0.0005;
+  float accumulator;
+  float prevAccumulator;
 
 public:
-  Combine();
-  void update(void);
+  Combine(void)
+    : AudioStream(NN, inputQueueArray) {
+  }
+
+  void update(void) {
+    audio_block_t *in, *out = NULL;
+
+    out = allocate();
+
+    if (!out) {
+      return;
+    }
+
+    //TODO: There must be a better way to do it
+    int32_t data[AUDIO_BLOCK_SAMPLES] = { 0 };
+    for (unsigned int channel = 0; channel < NN; channel++) {
+      in = receiveReadOnly(channel);
+      if (in) {
+
+        for (unsigned int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+          data[i] = constrain(data[i] + in->data[i] + INT16_MAX, 0, UINT16_MAX);
+        }
+        release(in);
+      }
+    }
+
+    for (unsigned int i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
+      out->data[i] = constrain(data[i] - INT16_MAX, INT16_MIN, INT16_MAX);
+      accumulator = (lowPassCoeff * out->data[i]) + (1.0f - lowPassCoeff) * out->data[i];
+    }
+
+    if (this->onChangeCallback && prevAccumulator != accumulator) {
+      this->onChangeCallback(accumulator);
+      prevAccumulator = accumulator;
+    }
+
+    transmit(out);
+    release(out);
+  }
+
+
+  void onChange(void (*onChangeCallback)(int16_t value)) {
+    this->onChangeCallback = onChangeCallback;
+  }
 };
-
-
-/**
- * Constructor
- */
-inline Combine::Combine()
-  : AudioStream(2, inputQueueArray) {
-    // this->index=index;
-}
-
-
-inline void Combine::update(void) {
-  audio_block_t *block1 = NULL, *block2 = NULL, *outBlock = NULL;
-
-  block1 = receiveReadOnly(0);
-  block2 = receiveReadOnly(1);
-  outBlock = allocate();
-
-  if (!block1 || !block2 || !outBlock) {
-    return;
-  }
-
-  for (uint8_t i = 0; i < AUDIO_BLOCK_SAMPLES; i++) {
-    outBlock->data[i] = constrain((block1->data[i] + INT16_MAX) + (block2->data[i] + INT16_MAX) - INT16_MAX, INT16_MIN, INT16_MAX);
-  }
-  // if(index==1){
-  // Serial.println(outBlock->data[0]);
-  // }
-  transmit(outBlock);
-  release(block1);
-  release(block2);
-  release(outBlock);
-}
-
-
 #endif
