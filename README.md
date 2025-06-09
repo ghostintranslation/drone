@@ -22,20 +22,9 @@ Width: 8HP / 40mm
 
 This module is based on the Motherboard and assumes you already have one built. For the assembly of the Motherboard please refer to the instructions in [its own repository](https://github.com/ghostintranslation/motherboard/).
 
-### Bill Of Materials
-
-```
-2 x 24 pin header
-6 x 10k linear potentiometer
-7 x mono Thonkiconn jack socket
-1 x stereo Thonkiconn jack socket
-11 x 3mm led
-11 x 150 ohm resistor (or higher depending of the leds)
-```
-
 ### Assembly
 
-Schematics are available under the hardware folder.
+Schematics and bill of materials are available under the hardware folder.
 
 #### Considerations
 
