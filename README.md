@@ -1,54 +1,67 @@
-# DRONE ![GitHub version](https://img.shields.io/github/v/release/ghostintranslation/drone.svg?include_prereleases)
+# Drone User Manual
 
-**Drone** is a powerful, 4-voice synthesizer/complex oscillator module. It runs high-quality digital sound algorithms to deliver rich, thick, and evolving drones, soundscapes, and metallic textures.
-
-This module is based on the [Motherboard](https://github.com/ghostintranslation/motherboard) platform which can be used to build any kind of digital modules. Current version uses a Pico 2 (RP2350).
-
-<img src="./hardware/drone.WEBP" width="200px"/>
+Drone is a modular drone synthesizer based on my Motherboard platform.
 
 ## Features
 
 * 4 individual voices
-* 16 Synthesis engines
+* 16 algorithms
 * Stereo audio (48kHz, 16-bit)
-* MIDI TRS Type A (planned)
+* MIDI TRS Type A IN and OUT
 * Auto calibration
 * Either-way power
 
-## Specifications
+## Technical Specifications
 
-* Size: 3U, 8HP
-* Depth: 50mm
-* Power: +12V 75mA, -12V 3.5mA, +5V 0mA
-* Inputs range: 0V to 5V
+* **Module Width**: 8 HP
+* **Depth**: 50 mm
+* **Power Consumption**:
+  * **+12V**: 75 mA
+  * **-12V**: 3.5 mA
+  * **+5V**: unused
+* **Audio Format**: Stereo, 48kHz, 16-bit
+* **CV Input Range**: 0V to 5V
 
-## How to use
+## Controls and CV Inputs
 
-The front panel features controls for adjusting the tuning, timbral shape, and volume mix of the 4 voices. It accepts standard Eurorack signals (CV - Control Voltage) to automate these parameters.
+The front panel features controls for adjusting the tuning, timbral shape, and volume mix of the 4 voices.
+
+All CV inputs read voltages between 0 and 5V. 
 
 ### Knobs
-* **A B C D**: Sets the base pitch/tuning for each of the four individual voices. The knobs cover a wide range of 7 octaves.
+* **A B C D**: Sets the base pitch/tuning for each of the four individual voices.
 * **MIX**: Turning this knob morphs the volumes of the four voices in a spiral motion.
 * **SHAPE**: Adjusts the main character of the sound (such as morphing wavetables, filter sweeps, or FM intensity).
 
 ### CV Inputs
-* **CV A, B, C, D**: Pitch CV inputs for each voice. Connect keyboard outputs, sequencers, or LFOs here to control the pitch of each voice (scales up to 5 octaves).
+* **CV A, B, C, D**: 1V/Octave pitch CV inputs for each voice.
 * **CV MIX**: Modulates the Mix parameter.
 * **CV SHAPE**: Modulates the Shape parameter.
 * **CV FM**: Linear frequency modulation for all four voices. 
 
 ### Navigation Button
+* **Mode button**:
+  * **Short Press**: Enters Algorithm Selection Mode (when in normal play mode) or cycles to the next algorithm (when in selection mode).
+  * **Long Press (1 second)**: Toggles Looper Mode (enters or exits).
 
-The Mode button is used to change the active synthesis algorithm:
+## Menu
 
-1. **Enter Menu**: Press and hold the **Mode BUTTON** for **1 second**. All 8 top LEDs will turn solid **Blue**.
-2. **Read the Settings**: The active algorithm is represented by two blinking **Red** LEDs:
-   * Bank Indicators (First 4 LEDs)
-   * Algorithm Indicators (Last 4 LEDs)
-3. **Change Algorithm**: Tap the **Mode BUTTON** to advance to the next algorithm.
-4. **Save & Exit**: After **5 seconds** of inactivity, the module will save your choice and automatically return to normal play mode.
+### Normal Play Mode
+In normal play mode:
+* The **8 LEDs at the top** display real-time levels of the control inputs and the main audio output.
+* The **4 LEDs in the middle** show the volume of each of the four voices.
 
-## Algorithms
+### Algorithm Selection Mode
+To change the active sound algorithm:
+
+1. **Enter Menu**: Short press the **Mode button**. All 8 top LEDs will turn solid **Blue**, except for the active selection.
+2. **Read Active Selection**: The active selection is shown by two blinking **Green** LEDs:
+   * **Bank Indicator** (one of the first 4 LEDs)
+   * **Algorithm Indicator** (one of the last 4 LEDs)
+3. **Change Algorithm**: Tap the **Mode button** to cycle to the next algorithm.
+4. **Save & Exit**: After **5 seconds** of inactivity, the module saves your choice and returns to play mode automatically.
+
+## The 16 Algorithms
 
 The module contains 16 algorithms. Below is an overview of what each algorithm does and what the **SHAPE** knob controls.
 
@@ -73,8 +86,8 @@ The module contains 16 algorithms. Below is an overview of what each algorithm d
 | :--- | :--- | :--- |
 | 1 | **Gong & Bells**: Inharmonic 4-operator FM chain recreating metallic bells. | Acts as modulation index. Morphs from simple sine tones to complex clangs and gong washes. |
 | 2 | **Dust-Triangle**: Warm triangle drone mixed with crackling rain impulses. | Blends between crackling, pitched rain clicks (0%) and a clean, warm triangle wave drone (100%). |
-| 3 | **[Unused / Empty]**: `[TODO: USER_INFO]` Add description of custom algorithm. | `[TODO: USER_INFO]` Describe shape function. |
-| 4 | **[Unused / Empty]**: `[TODO: USER_INFO]` Add description of custom algorithm. | `[TODO: USER_INFO]` Describe shape function. |
+| 3 | **PWM (Pulse-Width Modulation)**: Thick, stereo-panned square waves with a custom foldback distortion waveshaper. | Morphs the pulse width (duty cycle) of the square waves to change the harmonic profile. |
+| 4 | **Resonant Saw & Saturation**: Saturated sawtooth waves routed through a resonant lowpass filter. | Sweeps filter cutoff (200Hz to 6kHz), increases filter resonance, and drives the saturation level. |
 
 ### Bank 4
 | # | Sound Description | What the **SHAPE** Control Does |
@@ -84,31 +97,48 @@ The module contains 16 algorithms. Below is an overview of what each algorithm d
 | 3 | **Wavetable 3: "Fly By One"**: Vocal and sci-fi wavetable morphs with cascading modulation. | Scans smoothly through 128 waves to change the fundamental timbre. |
 | 4 | **Wavetable 4: "Yin Yang"**: Deep, harmonically complex wavetable morphs. | Scans smoothly through 128 waves to change the fundamental timbre. |
 
+## Looper
 
-# About me
+Drone features a built-in Looper to record and loop knob movements (TUNE A-D, MIX, SHAPE) up to **1 minute**, or **32 bars** when synchronized to a MIDI clock.
 
-You can buy Drone on my website:
+* **Enter / Exit Looper**: Hold the **Mode button** for **1 second**.
+* **Start Recording**: Short press the **Mode button** while in **Idle** (all 8 LEDs solid **Red**).
+* **Stop & Loop**: Short press the **Mode button** while recording (LEDs fill from **Red to Blue**). If MIDI clock is present, the loop stop is quantized to the next beat.
+* **Reset / Clear**: Short press the **Mode button** during Playback to erase the loop and return to Idle.
+* **Overdub**: Move any knob during Playback to record new values.
+* **MIDI Sync**: recording and Playback automatically sync to external MIDI clock. A MIDI Start message resets Playback to the start of the loop.
 
-https://www.ghostintranslation.com/
+## MIDI
 
-You can also find me on Bandcamp, Instagram, YouTube:
+Drone listens to and transmits on **Channel 1**.
 
-https://ghostintranslation.bandcamp.com/
+### Control Change (CC) Mapping
+* **CC 1**: Voice A Tune
+* **CC 2**: Voice B Tune
+* **CC 3**: Voice C Tune
+* **CC 4**: Voice D Tune
+* **CC 5**: Mix
+* **CC 6**: Shape
 
-https://www.instagram.com/ghostintranslation/
+### Clock & Transport
+* **MIDI Clock**: Synchronizes Looper recording and playback speed.
+* **MIDI Start**: Resets loop playback to the beginning.
 
-https://www.youtube.com/ghostintranslation
+## Firmware Update
 
-To support my work:
+The firmware update process is as follows:
 
-https://ko-fi.com/ghostintranslation
+1. **Power Off the Module**: Disconnect the module from power.
+2. **Press and hold BOOTSEL**: Locate the physical **BOOTSEL** button on the microcontroller (Pico 2) on the back of the module, and hold it down.
+3. **Connect to Computer**: While holding the **BOOTSEL** button, connect the Pico 2 to your computer via a USB cable.
+4. **Release BOOTSEL**: Once the USB cable is plugged in, release the button. The Pico 2 will mount on your computer as a USB mass storage drive.
+5. **Transfer the Firmware**: Locate your compiled firmware file with the `.uf2` extension. Drag and drop (or copy) the `.uf2` file onto the drive.
+6. **Automatic Reboot**: The Pico 2 will write the new firmware to its flash memory, automatically eject/unmount, and reboot with the updated firmware running.
 
-https://www.buymeacoffee.com/ghostintranslation
+## Troubleshooting
 
-https://liberapay.com/ghostintranslation
-
-https://github.com/sponsors/ghostintranslation
-
-# License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+### No Sound Output
+* Verify that the eurorack power ribbon cable is connected correctly.
+* Sweep the **Mix** and **Shape** knobs to see if that makes any difference. 
+* Make sure your audio cable is patched securely.
+* Switch off and switch on the module to restart the microcontroller.
