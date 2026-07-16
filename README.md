@@ -132,7 +132,7 @@ The firmware update process is as follows:
 2. **Press and hold BOOTSEL**: Locate the physical **BOOTSEL** button on the microcontroller (Pico 2) on the back of the module, and hold it down.
 3. **Connect to Computer**: While holding the **BOOTSEL** button, connect the Pico 2 to your computer via a USB cable.
 4. **Release BOOTSEL**: Once the USB cable is plugged in, release the button. The Pico 2 will mount on your computer as a USB mass storage drive.
-5. **Transfer the Firmware**: Locate your compiled firmware file with the `.uf2` extension. Drag and drop (or copy) the `.uf2` file onto the drive.
+5. **Transfer the Firmware**: Locate the compiled firmware file [firmware/drone.ino.uf2](firmware/drone.ino.uf2). Drag and drop (or copy) the `.uf2` file onto the drive.
 6. **Automatic Reboot**: The Pico 2 will write the new firmware to its flash memory, automatically eject/unmount, and reboot with the updated firmware running.
 
 ## Troubleshooting
