@@ -2,6 +2,10 @@
 
 Drone is a modular drone synthesizer based on my Motherboard platform. Current version is using a Pico 2 (RP2350).
 
+<img src="./images/drone.jpg" width="50%" />
+
+Available on https://www.ghostintranslation.com/
+
 This module is going to be fully open-source, but I have yet to document everything.
 
 ## Features
