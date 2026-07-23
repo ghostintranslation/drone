@@ -1,12 +1,15 @@
 # Drone User Manual
 
-Drone is a modular drone synthesizer based on my Motherboard platform.
+Drone is a modular drone synthesizer based on my Motherboard platform. Current version is using a Pico 2 (RP2350).
+
+This module is going to be fully open-source, but I have yet to document everything.
 
 ## Features
 
 * 4 individual voices
 * 16 algorithms
-* Stereo audio (48kHz, 16-bit)
+* 32 bit float DSP
+* Stereo audio (48kHz, 32-bit)
 * MIDI TRS Type A IN and OUT
 * Auto calibration
 * Either-way power
@@ -18,8 +21,6 @@ Drone is a modular drone synthesizer based on my Motherboard platform.
 * **Power Consumption**:
   * **+12V**: 75 mA
   * **-12V**: 3.5 mA
-  * **+5V**: unused
-* **Audio Format**: Stereo, 48kHz, 16-bit
 * **CV Input Range**: 0V to 5V
 
 ## Controls and CV Inputs
