@@ -266,6 +266,7 @@ tr:nth-child(even) {
 </div>
 
 <div class="toc-page">
+  <!-- Table of Contents Section -->
   <h2 class="toc-heading">Table of Contents</h2>
   <ul class="toc-list">
     <li>
@@ -274,41 +275,47 @@ tr:nth-child(even) {
       <span class="toc-page-num">3</span>
     </li>
     <li>
-      <span class="toc-title">2. Controls and CV Inputs</span>
+      <span class="toc-title">2. Installation</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num">4</span>
     </li>
     <li>
-      <span class="toc-title">3. Menu & Navigation</span>
+      <span class="toc-title">3. Controls and CV Inputs</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num">5</span>
     </li>
     <li>
-      <span class="toc-title">4. The 16 Algorithms</span>
+      <span class="toc-title">4. Menu & Navigation</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num">6</span>
     </li>
     <li>
-      <span class="toc-title">5. Built-in Looper</span>
+      <span class="toc-title">5. The 16 Algorithms</span>
       <span class="toc-dots"></span>
-      <span class="toc-page-num">8</span>
+      <span class="toc-page-num">7</span>
     </li>
     <li>
-      <span class="toc-title">6. MIDI Implementation</span>
+      <span class="toc-title">6. Built-in Looper</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num">9</span>
     </li>
     <li>
-      <span class="toc-title">7. Firmware Update</span>
+      <span class="toc-title">7. MIDI Implementation</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num">10</span>
     </li>
     <li>
-      <span class="toc-title">8. Troubleshooting</span>
+      <span class="toc-title">8. Firmware Update</span>
       <span class="toc-dots"></span>
       <span class="toc-page-num">11</span>
     </li>
+    <li>
+      <span class="toc-title">9. Troubleshooting</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page-num">12</span>
+    </li>
   </ul>
+  <!-- Page footer with page number 2 -->
   <div class="page-footer">
     <span>Drone User Manual</span>
     <span>Page 2</span>
@@ -316,6 +323,7 @@ tr:nth-child(even) {
 </div>
 
 <div class="page-body">
+  <!-- Section 1: Introduction -->
   <h1>1. Introduction</h1>
 
   <p>Drone is a multi-algorithm drone module based on my Motherboard platform.</p>
@@ -336,7 +344,7 @@ tr:nth-child(even) {
 
   <ul>
     <li><strong>Module Width</strong>: 8 HP</li>
-    <li><strong>Depth</strong>: 50 mm</li>
+    <li><strong>Depth</strong>: 45 mm</li>
     <li><strong>Power Consumption</strong>:
       <ul>
         <li><strong>+12V</strong>: 75 mA</li>
@@ -346,6 +354,7 @@ tr:nth-child(even) {
     <li><strong>CV Input Range</strong>: 0V to 5V</li>
   </ul>
   
+  <!-- Page footer with page number 3 -->
   <div class="page-footer">
     <span>Drone User Manual</span>
     <span>Page 3</span>
@@ -353,7 +362,21 @@ tr:nth-child(even) {
 </div>
 
 <div class="page-body">
-  <h1>2. Controls and CV Inputs</h1>
+  <!-- Section 2: Installation -->
+  <h1>2. Installation</h1>
+
+  <p>Turn off and disconnect your Eurorack case from AC mains power before installing this module. Connect the supplied power ribbon cable to the module and your busboard. This module is equiped with either-way power, so no magic smoke will be released if you plug it in backwards.</p>
+  
+  <!-- Page footer with page number 4 -->
+  <div class="page-footer">
+    <span>Drone User Manual</span>
+    <span>Page 4</span>
+  </div>
+</div>
+
+<div class="page-body">
+  <!-- Section 3: Controls and CV Inputs -->
+  <h1>3. Controls and CV Inputs</h1>
 
   <p>The front panel features controls for adjusting the tuning, timbral shape, and volume mix of the 4 voices.</p>
 
@@ -365,6 +388,8 @@ tr:nth-child(even) {
     <li><strong>MIX</strong>: Turning this knob morphs the volumes of the four voices in a spiral motion.</li>
     <li><strong>SHAPE</strong>: Adjusts the main character of the sound (such as morphing wavetables, filter sweeps, or FM intensity).</li>
   </ul>
+
+  <p>Each tuning knob has a different range, from 2 octaves to 5 octaves. This is to facilitate fine tuning rather than having a full 5 octaves on all voices.</p>
 
   <h2>CV Inputs</h2>
   <ul>
@@ -384,14 +409,16 @@ tr:nth-child(even) {
     </li>
   </ul>
   
+  <!-- Page footer with page number 5 -->
   <div class="page-footer">
     <span>Drone User Manual</span>
-    <span>Page 4</span>
+    <span>Page 5</span>
   </div>
 </div>
 
 <div class="page-body">
-  <h1>3. Menu & Navigation</h1>
+  <!-- Section 4: Menu & Navigation -->
+  <h1>4. Menu & Navigation</h1>
 
   <h2>Normal Play Mode</h2>
   <p>In normal play mode:</p>
@@ -414,14 +441,16 @@ tr:nth-child(even) {
     <li><strong>Save & Exit</strong>: After <strong>5 seconds</strong> of inactivity, the module saves your choice and returns to play mode automatically.</li>
   </ol>
   
+  <!-- Page footer with page number 6 -->
   <div class="page-footer">
     <span>Drone User Manual</span>
-    <span>Page 5</span>
+    <span>Page 6</span>
   </div>
 </div>
 
 <div class="page-body">
-  <h1>4. The 16 Algorithms</h1>
+  <!-- Section 5: The 16 Algorithms (Bank 1 & 2) -->
+  <h1>5. The 16 Algorithms</h1>
 
   <p>The module contains 16 algorithms. Below is an overview of what each algorithm does and what the <strong>SHAPE</strong> knob controls.</p>
 
@@ -491,13 +520,15 @@ tr:nth-child(even) {
     </tbody>
   </table>
   
+  <!-- Page footer with page number 7 -->
   <div class="page-footer">
     <span>Drone User Manual</span>
-    <span>Page 6</span>
+    <span>Page 7</span>
   </div>
 </div>
 
 <div class="page-body">
+  <!-- Section 5: The 16 Algorithms (Continued: Bank 3 & 4) -->
   <h2>Bank 3</h2>
   <table>
     <thead>
@@ -564,14 +595,16 @@ tr:nth-child(even) {
     </tbody>
   </table>
   
+  <!-- Page footer with page number 8 -->
   <div class="page-footer">
     <span>Drone User Manual</span>
-    <span>Page 7</span>
+    <span>Page 8</span>
   </div>
 </div>
 
 <div class="page-body">
-  <h1>5. Built-in Looper</h1>
+  <!-- Section 6: Built-in Looper -->
+  <h1>6. Built-in Looper</h1>
 
   <p>Drone features a built-in Looper to record and loop knob movements (TUNE A-D, MIX, SHAPE) up to <strong>1 minute</strong>, or <strong>32 bars</strong> when synchronized to a MIDI clock.</p>
 
@@ -584,14 +617,16 @@ tr:nth-child(even) {
     <li><strong>MIDI Sync</strong>: recording and Playback automatically sync to external MIDI clock. A MIDI Start message resets Playback to the start of the loop.</li>
   </ul>
   
+  <!-- Page footer with page number 9 -->
   <div class="page-footer">
     <span>Drone User Manual</span>
-    <span>Page 8</span>
+    <span>Page 9</span>
   </div>
 </div>
 
 <div class="page-body">
-  <h1>6. MIDI Implementation</h1>
+  <!-- Section 7: MIDI Implementation -->
+  <h1>7. MIDI Implementation</h1>
 
   <p>Drone listens to and transmits on <strong>Channel 1</strong>.</p>
 
@@ -611,14 +646,16 @@ tr:nth-child(even) {
     <li><strong>MIDI Start</strong>: Resets loop playback to the beginning.</li>
   </ul>
   
+  <!-- Page footer with page number 10 -->
   <div class="page-footer">
     <span>Drone User Manual</span>
-    <span>Page 9</span>
+    <span>Page 10</span>
   </div>
 </div>
 
 <div class="page-body">
-  <h1>7. Firmware Update</h1>
+  <!-- Section 8: Firmware Update -->
+  <h1>8. Firmware Update</h1>
 
   <p>The firmware update process is as follows:</p>
 
@@ -631,14 +668,16 @@ tr:nth-child(even) {
     <li><strong>Automatic Reboot</strong>: The Pico 2 will write the new firmware to its flash memory, automatically eject/unmount, and reboot with the updated firmware running.</li>
   </ol>
 
+  <!-- Page footer with page number 11 -->
   <div class="page-footer">
     <span>Drone User Manual</span>
-    <span>Page 10</span>
+    <span>Page 11</span>
   </div>
 </div>
 
 <div class="page-body">
-  <h1>8. Troubleshooting</h1>
+  <!-- Section 9: Troubleshooting -->
+  <h1>9. Troubleshooting</h1>
 
   <h2>No Sound Output</h2>
   <ul>
@@ -648,8 +687,9 @@ tr:nth-child(even) {
     <li>Switch off and switch on the module to restart the microcontroller.</li>
   </ul>
   
+  <!-- Page footer with page number 12 -->
   <div class="page-footer">
     <span>Drone User Manual</span>
-    <span>Page 11</span>
+    <span>Page 12</span>
   </div>
 </div>
