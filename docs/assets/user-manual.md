@@ -366,6 +366,8 @@ tr:nth-child(even) {
   <h1>2. Installation</h1>
 
   <p>Turn off and disconnect your Eurorack case from AC mains power before installing this module. Connect the supplied power ribbon cable to the module and your busboard. This module is equiped with either-way power, so no magic smoke will be released if you plug it in backwards.</p>
+
+  <p>The audio output is stereo and the module comes with a stereo split cable allowing to patch the left and right channels with mono cables as usual. Though if you prefer you can still use one mono cable instead in which case you would still hear all voices but with 2 of them quieter. The A and B voices are panned 66% to the left and right respectively and the D and C voices are panned 25% to the left and right respectively.</p>
   
   <!-- Page footer with page number 4 -->
   <div class="page-footer">
