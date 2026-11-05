@@ -13,3 +13,9 @@ This module is going to be fully open-source, but I have yet to document everyth
 The complete user manual, including controls, algorithm guide, looper operation, and firmware update instructions, is available in PDF format:
 
 👉 **[Download Drone User Manual (PDF)](./docs/user-manual.pdf)**
+
+## Firmware
+
+The firmware can be found in this repo under firmware, here is a quick link: 
+
+👉 **[Download the latest firmware](./firmware/drone_3.0.5.uf2)**

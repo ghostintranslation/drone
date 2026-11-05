@@ -641,6 +641,7 @@ tr:nth-child(even) {
     <li><strong>CC 5</strong>: Mix</li>
     <li><strong>CC 6</strong>: Shape</li>
     <li><strong>CC 7</strong>: Algorithm select</li>
+    <li><strong>CC 8</strong>: Stereo spread</li>
   </ul>
 
   <h2>Clock & Transport</h2>
